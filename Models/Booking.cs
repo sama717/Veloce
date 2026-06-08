@@ -16,4 +16,5 @@ public class Booking
     
     public Car Car { get; set; }
     public User User { get; set; }
+    public ICollection<Payment> Payments { get; set; } =  new List<Payment>();
 }

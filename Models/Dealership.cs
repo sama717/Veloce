@@ -8,5 +8,7 @@ public class Dealership
     public string City { get; set; }
     public string State { get; set; }
     public string Country { get; set; }
-    public ICollection<Car> Cars { get; set; } = new List<Car>();
+    
+    public ICollection<EmployeeProfile> Employees { get; set; } = new List<EmployeeProfile>();
+    public ICollection<AssetOwnership> AssetOwnerships { get; set; } = new List<AssetOwnership>();
 }

@@ -19,6 +19,8 @@ public class Car
     public CarStatus Status { get; set; }
     public CarCondition Condition { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+
+    public AssetOwnership AssetOwnership { get; set; }
     public ICollection<CarImage> Images { get; set; } = new  List<CarImage>();
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }
