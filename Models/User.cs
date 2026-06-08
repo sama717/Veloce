@@ -16,4 +16,9 @@ public class User
     public UserRole Role { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; } =  DateTime.UtcNow;
+    
+    public ClientProfile? ClientProfile { get; set; }
+    public EmployeeProfile? EmployeeProfile { get; set; }
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<AssetOwnership> AssetOwnerships { get; set; } = new List<AssetOwnership>();
 }
