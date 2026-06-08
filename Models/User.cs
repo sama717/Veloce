@@ -14,8 +14,8 @@ public class User
     public string Username { get; set; }
     public string PasswordHash { get; set; }
     public UserRole Role { get; set; }
-    public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; } =  DateTime.UtcNow;
+    public UserStatus Status { get; set; } = UserStatus.Active;
     
     public ClientProfile? ClientProfile { get; set; }
     public EmployeeProfile? EmployeeProfile { get; set; }
