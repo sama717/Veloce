@@ -12,7 +12,7 @@ public class Payment
     public decimal? DealershipCut { get; set; }
     public decimal? OwnerPayout { get; set; }
     public PaymentStatus Status { get; set; }
-    public int StripePaymentId { get; set; }
+    public string StripePaymentId { get; set; }
     public DateTime CreatedAt { get; set; }
     
     public Booking Booking { get; set; }
