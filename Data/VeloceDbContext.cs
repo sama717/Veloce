@@ -6,6 +6,8 @@ namespace Veloco.Data;
 
 public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbContext(options)
 {
+    public DbSet<RentalDetail> RentalDetails { get; set; }
+    public DbSet<ConsultationDetail> ConsultationDetails { get; set; }
     public DbSet<AssetOwnership> AssetOwnerships { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<Car> Cars { get; set; }
@@ -96,7 +98,9 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
             {
                 t.HasCheckConstraint("CK_Car_Price_Positive", "\"Price\" >= 0");
                 t.HasCheckConstraint("CK_Car_PricePerDay_Positive", "\"PricePerDay\" >= 0");
-
+                t.HasCheckConstraint("CK_Car_Quantity_Positive", "\"Quantity\" > 0");
+                t.HasCheckConstraint("CK_Car_AvailableQuantity_Valid",
+                    "\"AvailableQuantity\" >= 0 AND \"AvailableQuantity\" <= \"Quantity\"");
                 t.HasCheckConstraint(
                     "CK_Car_Pricing_Match_ListingType",
                     "(\"Type\" = 'Sale' AND \"Price\" IS NOT NULL AND \"PricePerDay\" IS NULL) OR " +
@@ -117,12 +121,10 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
         #endregion
 
         #region Booking
-
         modelBuilder.Entity<Booking>(entity =>
         {
-            entity.Property(b => b.VerificationDocument).IsRequired().HasMaxLength(500);
-            entity.Property(b => b.TotalPrice).IsRequired().HasColumnType("numeric(18,2)");
             entity.Property(b => b.Status).HasConversion<string>();
+            entity.Property(b => b.BookingType).HasConversion<string>();
 
             entity.HasOne(b => b.Car)
                 .WithMany(b => b.Bookings)
@@ -134,16 +136,20 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.ToTable(t => t.HasCheckConstraint(
-                "CK_Booking_Dates_Valid",
-                "\"EndDate\" >= \"StartDate\""
-            ));
+            entity.HasOne(b => b.RentalDetail)
+                .WithOne(r => r.Booking)
+                .HasForeignKey<RentalDetail>(r => r.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(b => b.ConsultationDetail)
+                .WithOne(c => c.Booking)
+                .HasForeignKey<ConsultationDetail>(c => c.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         #endregion
 
         #region Payment
-
         modelBuilder.Entity<Payment>(entity =>
         {
             entity.Property(p => p.StripePaymentId).IsRequired().HasMaxLength(100);
@@ -154,9 +160,9 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
             entity.Property(p => p.OwnerPayout).HasColumnType("numeric(18,2)");
             entity.Property(p => p.Status).HasConversion<string>();
 
-            entity.HasOne(p => p.Booking)
-                .WithMany(b => b.Payments)
-                .HasForeignKey(p => p.BookingId)
+            entity.HasOne(p => p.RentalDetail)
+                .WithMany(r => r.Payments)
+                .HasForeignKey(p => p.RentalDetailId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.ToTable(t => t.HasCheckConstraint(
@@ -176,6 +182,8 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
             entity.Property(d => d.City).IsRequired().HasMaxLength(100);
             entity.Property(d => d.State).IsRequired().HasMaxLength(100);
             entity.Property(d => d.Country).IsRequired().HasMaxLength(100);
+            entity.Property(d => d.Email).IsRequired().HasMaxLength(100);     
+            entity.Property(d => d.PhoneNumber).IsRequired().HasMaxLength(20);
         });
 
         #endregion
@@ -205,6 +213,29 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
             ));
         });
 
+        #endregion
+        
+        #region BookingDetails
+        modelBuilder.Entity<RentalDetail>(entity =>
+        {
+            entity.Property(r => r.VerificationDocument).IsRequired().HasMaxLength(500);
+            entity.Property(r => r.TotalPrice).IsRequired().HasColumnType("numeric(18,2)");
+            entity.Property(r => r.StripePaymentIntentId).HasMaxLength(100);
+
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_RentalDetail_Dates_Valid",
+                "\"EndDate\" > \"StartDate\""
+            ));
+        });
+
+        modelBuilder.Entity<ConsultationDetail>(entity =>
+        {
+            entity.Property(c => c.Notes).HasMaxLength(500);
+            entity.HasOne(c => c.Dealership)
+                .WithMany(d => d.Consultations)
+                .HasForeignKey(c => c.DealershipId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         #endregion
     }
 }

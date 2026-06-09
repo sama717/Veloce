@@ -5,7 +5,7 @@ namespace Veloco.Models;
 public class Payment
 {
     public int Id { get; set; }
-    public int BookingId { get; set; }
+    public int RentalDetailId { get; set; } 
     public decimal Amount { get; set; }
     public decimal Tax { get; set; }
     public decimal TotalAmount { get; set; }
@@ -15,5 +15,5 @@ public class Payment
     public string StripePaymentId { get; set; }
     public DateTime CreatedAt { get; set; }
     
-    public Booking Booking { get; set; }
+    public RentalDetail RentalDetail { get; set; } 
 }
