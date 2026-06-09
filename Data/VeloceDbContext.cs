@@ -117,6 +117,10 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
                 .WithMany(c => c.Images)
                 .HasForeignKey(ci => ci.CarId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(ci => new { ci.CarId, ci.IsMain })
+                .IsUnique()
+                .HasFilter("\"IsMain\" = true");
         });
         #endregion
 
