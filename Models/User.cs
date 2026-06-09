@@ -21,4 +21,7 @@ public class User
     public EmployeeProfile? EmployeeProfile { get; set; }
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<AssetOwnership> AssetOwnerships { get; set; } = new List<AssetOwnership>();
+    public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+    public ICollection<EmailChangeToken> EmailChangeTokens { get; set; } = new List<EmailChangeToken>();
+    public ICollection<PhoneChangeToken> PhoneChangeTokens { get; set; } = new List<PhoneChangeToken>();
 }

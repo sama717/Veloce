@@ -10,6 +10,9 @@ public interface IUnitOfWork : IDisposable
     IPaymentRepository Payments { get; }
     IDealershipRepository Dealerships { get; }
     IAssetOwnershipRepository AssetOwnerships { get; }
+    IEmailChangeTokenRepository EmailChangeTokens { get; }
+    IPhoneChangeTokenRepository PhoneChangeTokens { get; }
+    IPasswordResetTokenRepository PasswordResetTokens { get; }
     
     Task<int> SaveChangesAsync();
 }
