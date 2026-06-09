@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Veloce.Repository;
 using Veloco.Data;
-namespace Veloco;
+using Veloco.Interfaces;
+
+namespace Veloce;
 
 public class Program
 {
@@ -24,6 +27,14 @@ public class Program
         {
             options.UseNpgsql(connectionString);
         });
+        
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<ICarRepository, CarRepository>();
+        builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+        builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+        builder.Services.AddScoped<IDealershipRepository, DealershipRepository>();
+        builder.Services.AddScoped<IAssetOwnershipRepository, AssetOwnershipRepository>();
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         var app = builder.Build();
 

@@ -1,3 +1,5 @@
+using Veloco.Interfaces;
+
 namespace Veloco.Interfaces;
 
 public interface IUnitOfWork : IDisposable
