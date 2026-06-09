@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Veloce.Mapping;
 using Veloce.Repository;
 using Veloco.Data;
 using Veloco.Interfaces;
@@ -22,7 +23,7 @@ public class Program
             {
                 cfg.LicenseKey = licenseKey;
             },
-        typeof(Program).Assembly);
+        typeof(MappingProfile).Assembly);
         builder.Services.AddDbContext<VeloceDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
