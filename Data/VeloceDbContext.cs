@@ -17,6 +17,9 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
     public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+    public DbSet<EmailChangeToken> EmailChangeTokens { get; set; }
+    public DbSet<PhoneChangeToken> PhoneChangeTokens { get; set; }
     
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -239,6 +242,35 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options) : DbCont
                 .WithMany(d => d.Consultations)
                 .HasForeignKey(c => c.DealershipId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        #endregion
+        
+        #region Security
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasOne(t => t.User)
+                .WithMany(u => u.PasswordResetTokens)
+                .HasForeignKey(t => t.UserId);
+            
+            entity.HasIndex(t => t.TokenHash); 
+        });
+        
+        modelBuilder.Entity<PhoneChangeToken>(entity =>
+        {
+            entity.HasOne(t => t.User)
+                .WithMany(u => u.PhoneChangeTokens)
+                .HasForeignKey(t => t.UserId);
+            
+            entity.HasIndex(t => t.TokenHash);
+        });
+        
+        modelBuilder.Entity<EmailChangeToken>(entity =>
+        {
+            entity.HasOne(t => t.User)
+                .WithMany(u => u.EmailChangeTokens)
+                .HasForeignKey(t => t.UserId);
+            
+            entity.HasIndex(t => t.TokenHash);
         });
         #endregion
     }
