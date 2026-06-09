@@ -7,14 +7,12 @@ public class Booking
     public int Id { get; set; }
     public int UserId { get; set; }
     public int CarId { get; set; }
-    public string VerificationDocument { get; set; }
-    public DateTime CreatedAt { get; set; } =  DateTime.UtcNow;
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
-    public decimal TotalPrice { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public BookingStatus Status { get; set; }
-    
+    public BookingType BookingType { get; set; }
+
     public Car Car { get; set; }
     public User User { get; set; }
-    public ICollection<Payment> Payments { get; set; } =  new List<Payment>();
+    public RentalDetail? RentalDetail { get; set; }
+    public ConsultationDetail? ConsultationDetail { get; set; }
 }

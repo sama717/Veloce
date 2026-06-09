@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Veloco.Data;
@@ -11,9 +12,11 @@ using Veloco.Data;
 namespace Veloco.Migrations
 {
     [DbContext(typeof(VeloceDbContext))]
-    partial class VeloceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609091937_AddRentalAndConsultationDetails")]
+    partial class AddRentalAndConsultationDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,9 +99,6 @@ namespace Veloco.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AvailableQuantity")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -134,7 +134,7 @@ namespace Veloco.Migrations
                     b.Property<decimal?>("PricePerDay")
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<int>("Quantity")
+                    b.Property<int?>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<int>("Seats")
@@ -155,15 +155,11 @@ namespace Veloco.Migrations
 
                     b.ToTable("Cars", t =>
                         {
-                            t.HasCheckConstraint("CK_Car_AvailableQuantity_Valid", "\"AvailableQuantity\" >= 0 AND \"AvailableQuantity\" <= \"Quantity\"");
-
                             t.HasCheckConstraint("CK_Car_PricePerDay_Positive", "\"PricePerDay\" >= 0");
 
                             t.HasCheckConstraint("CK_Car_Price_Positive", "\"Price\" >= 0");
 
                             t.HasCheckConstraint("CK_Car_Pricing_Match_ListingType", "(\"Type\" = 'Sale' AND \"Price\" IS NOT NULL AND \"PricePerDay\" IS NULL) OR (\"Type\" = 'Rent' AND \"PricePerDay\" IS NOT NULL AND \"Price\" IS NULL)");
-
-                            t.HasCheckConstraint("CK_Car_Quantity_Positive", "\"Quantity\" > 0");
                         });
                 });
 
@@ -224,9 +220,6 @@ namespace Veloco.Migrations
                     b.Property<int>("BookingId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DealershipId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -238,8 +231,6 @@ namespace Veloco.Migrations
 
                     b.HasIndex("BookingId")
                         .IsUnique();
-
-                    b.HasIndex("DealershipId");
 
                     b.ToTable("ConsultationDetails");
                 });
@@ -267,20 +258,10 @@ namespace Veloco.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("State")
                         .IsRequired()
@@ -551,15 +532,7 @@ namespace Veloco.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Veloco.Models.Dealership", "Dealership")
-                        .WithMany("Consultations")
-                        .HasForeignKey("DealershipId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Booking");
-
-                    b.Navigation("Dealership");
                 });
 
             modelBuilder.Entity("Veloco.Models.EmployeeProfile", b =>
@@ -623,8 +596,6 @@ namespace Veloco.Migrations
             modelBuilder.Entity("Veloco.Models.Dealership", b =>
                 {
                     b.Navigation("AssetOwnerships");
-
-                    b.Navigation("Consultations");
 
                     b.Navigation("Employees");
                 });

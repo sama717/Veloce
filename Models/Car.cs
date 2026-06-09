@@ -14,7 +14,8 @@ public class Car
     public string? Description { get; set; }
     public decimal? Price { get; set; }
     public decimal? PricePerDay { get; set; }
-    public int? Quantity { get; set; }
+    public int Quantity { get; set; }
+    public int AvailableQuantity { get; set; }
     public ListingType Type { get; set; }
     public CarStatus Status { get; set; }
     public CarCondition Condition { get; set; }
