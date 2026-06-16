@@ -23,6 +23,12 @@ public class UserRepository(VeloceDbContext context) : GenericRepository<User>(c
         return await _dbSet
             .Include(x => x.ClientProfile)
             .Include(x => x.EmployeeProfile)
+                .ThenInclude(e => e.Dealership)
             .FirstOrDefaultAsync(x => x.Id == id);
+    }
+    
+    public async Task<User?> GetByPhoneNumberAsync(string phoneNumber)
+    {
+        return await _dbSet.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
     }
 }

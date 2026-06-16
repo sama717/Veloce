@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Veloce.Mapping;
 using Veloce.Repository;
+using Veloce.Services;
 using Veloco.Data;
 using Veloco.Interfaces;
 
@@ -41,7 +42,9 @@ public class Program
         builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
         builder.Services.AddScoped<IDealershipRepository, DealershipRepository>();
         builder.Services.AddScoped<IAssetOwnershipRepository, AssetOwnershipRepository>();
+        builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddScoped<IEmailService, EmailService>();
 
         builder.Services.AddAuthentication(options =>
         {

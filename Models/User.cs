@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using Veloco.Enums;
 
 namespace Veloco.Models;
 
-public class User
+public class User 
 {
     public int Id { get; set; }
     public string? ProfilePicture { get; set; }
@@ -14,6 +15,7 @@ public class User
     public string Username { get; set; }
     public string PasswordHash { get; set; }
     public UserRole Role { get; set; }
+    public bool IsEmailVerified { get; set; }
     public DateTime CreatedAt { get; set; } =  DateTime.UtcNow;
     public UserStatus Status { get; set; } = UserStatus.Active;
     
@@ -24,4 +26,5 @@ public class User
     public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
     public ICollection<EmailChangeToken> EmailChangeTokens { get; set; } = new List<EmailChangeToken>();
     public ICollection<PhoneChangeToken> PhoneChangeTokens { get; set; } = new List<PhoneChangeToken>();
+    public ICollection<EmailVerificationToken> EmailVerificationTokens { get; set; } = new List<EmailVerificationToken>();
 }
