@@ -17,6 +17,7 @@ public class UnitOfWork : IUnitOfWork
     public IEmailChangeTokenRepository EmailChangeTokens { get; }
     public IPhoneChangeTokenRepository PhoneChangeTokens { get; }
     public IPasswordResetTokenRepository PasswordResetTokens { get; }
+    public IEmailVerificationTokenRepository EmailVerificationTokens { get; }
 
     public UnitOfWork(VeloceDbContext context)
     {
@@ -31,6 +32,7 @@ public class UnitOfWork : IUnitOfWork
         EmailChangeTokens = new EmailChangeTokenRepository(_context);
         PhoneChangeTokens = new PhoneChangeTokenRepository(_context);
         PasswordResetTokens = new PasswordResetTokenRepository(_context);
+        EmailVerificationTokens = new EmailVerificationTokenRepository(_context);
     }
 
     public async Task<int> SaveChangesAsync()

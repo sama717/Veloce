@@ -13,6 +13,7 @@ public interface IUnitOfWork : IDisposable
     IEmailChangeTokenRepository EmailChangeTokens { get; }
     IPhoneChangeTokenRepository PhoneChangeTokens { get; }
     IPasswordResetTokenRepository PasswordResetTokens { get; }
+    IEmailVerificationTokenRepository EmailVerificationTokens { get; }
     
     Task<int> SaveChangesAsync();
 }

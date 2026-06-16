@@ -11,6 +11,7 @@ public class UserDto
     public string PhoneNumber { get; set; }
     public string Username { get; set; }
     public string Role { get; set; }
+    public bool IsEmailVerified { get; set; }
     public DateTime CreatedAt { get; set; }
     public ClientProfileDto? ClientProfile { get; set; }
     public EmployeeProfileDto? EmployeeProfile { get; set; }
