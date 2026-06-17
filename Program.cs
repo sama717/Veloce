@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Veloce.Mapping;
+using Veloce.Middleware;
 using Veloce.Repository;
 using Veloce.Services;
 using Veloco.Data;
@@ -41,10 +42,20 @@ public class Program
         builder.Services.AddScoped<IBookingRepository, BookingRepository>();
         builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
         builder.Services.AddScoped<IDealershipRepository, DealershipRepository>();
+        builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        builder.Services.AddScoped<IEmailChangeTokenRepository, EmailChangeTokenRepository>();
+        builder.Services.AddScoped<IPhoneChangeTokenRepository, PhoneChangeTokenRepository>();
         builder.Services.AddScoped<IAssetOwnershipRepository, AssetOwnershipRepository>();
         builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<IEmailService, EmailService>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+        builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
+
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddAuthentication(options =>
         {
@@ -71,9 +82,13 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
 
         app.UseHttpsRedirection();
+        
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
         
         app.UseAuthentication();
 

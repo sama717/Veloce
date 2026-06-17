@@ -11,7 +11,7 @@ public class EmailService(IConfiguration configuration) : IEmailService
 
     public async Task SendEmailAsync(string toEmail, string subject, string title, string message, string? code = null)
     {
-        var templatePath =  Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", "EmailTemplate.txt");
+        var templatePath =  Path.Combine(Directory.GetCurrentDirectory(), "Templates", "EmailTemplate.html");
         var template = await File.ReadAllTextAsync(templatePath);
         
         template = template.Replace("{{Title}}", title);
@@ -21,7 +21,7 @@ public class EmailService(IConfiguration configuration) : IEmailService
         var email = new MimeMessage();
         email.From.Add(new MailboxAddress(
             _configuration["Email:FromName"], 
-            _configuration["Email:FromAddress"]
+            _configuration["Email:Username"]
             ));
         
         email.To.Add(MailboxAddress.Parse(toEmail));
@@ -82,6 +82,16 @@ public class EmailService(IConfiguration configuration) : IEmailService
             subject: "Phone number updated",
             title: "Phone number updated",
             message: $"Your phone number has been successfully changed to {newPhoneNumber}. If you didn't do this, contact support immediately."
+        );
+    }
+    
+    public async Task SendEmailVerifiedConfirmationAsync(string email)
+    {
+        await SendEmailAsync(
+            email,
+            subject: "Your email has been verified",
+            title: "Email verified",
+            message: "Your email address has been successfully verified. You now have full access to your Veloce account."
         );
     }
 }
