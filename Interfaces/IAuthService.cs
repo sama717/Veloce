@@ -19,4 +19,5 @@ public interface IAuthService
     Task ChangePhoneNumberAsync(int userId, ChangePhoneNumberRequestDto dto);
     Task VerifyPhoneNumberChangeAsync(int userId, VerifyPhoneNumberChangeDto dto);
     Task VerifyEmailAsync(int userId, string code);
+    Task ResendVerificationEmailAsync(int userId);
 }

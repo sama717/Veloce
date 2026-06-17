@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Veloce.Exceptions;
 using Veloco.DTOs.Auth;
 using Veloco.DTOs.User;
 using Veloco.Interfaces;
@@ -32,16 +34,16 @@ public class AuthService(
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
         var existingEmail = await _unitOfWork.Users.GetByEmailAsync(request.Email);
-        if (existingEmail != null) 
-            throw new Exception("Email already exists");
+        if (existingEmail != null)
+            throw new AppException("Email already exists", 400);
         
         var existingUserName = await _unitOfWork.Users.GetByUsernameAsync(request.Username);
         if (existingUserName != null)
-            throw new Exception("Username already exists");
+            throw new AppException("Username already exists", 400);
         
         var existingPhone = await _unitOfWork.Users.GetByPhoneNumberAsync(request.PhoneNumber);
         if (existingPhone != null)
-            throw new Exception("Phone number already in use.");
+            throw new AppException("Phone number already in use", 400);
 
         var user = new User{
             FirstName = request.FirstName,
@@ -104,11 +106,11 @@ public class AuthService(
         var user = await _unitOfWork.Users.GetByEmailAsync(request.Identifier)
                    ?? await _unitOfWork.Users.GetByUsernameAsync(request.Identifier);
         if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
-            throw new Exception("Invalid credentials");
+            throw new AppException("Invalid credentials", 401);
         
         user = await _unitOfWork.Users.GetWithProfileAsync(user.Id);
         if (user == null) 
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
         
         var jwt = _tokenService.GenerateToken(user);
 
@@ -167,11 +169,11 @@ public class AuthService(
         var token = await _unitOfWork.PasswordResetTokens.GetValidTokenAsync(tokenHash);
 
         if (token == null || token.ExpiresAt < DateTime.UtcNow || token.IsUsed)
-            throw new Exception("Invalid or expired token");
+            throw new AppException("Invalid or expired token", 400);
         
         var user = await _unitOfWork.Users.GetByIdAsync(token.UserId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
 
         user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
         token.IsUsed = true;
@@ -185,10 +187,10 @@ public class AuthService(
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 400);
         
         if (!_passwordHasher.VerifyPassword(dto.CurrentPassword, user.PasswordHash))
-            throw new Exception("Invalid password");
+            throw new AppException("Invalid password", 401);
         
         user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
         _unitOfWork.Users.Update(user);
@@ -199,14 +201,14 @@ public class AuthService(
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
         
         if (!_passwordHasher.VerifyPassword(dto.Password, user.PasswordHash))
-            throw new Exception("Invalid password");
+            throw new AppException("Invalid password", 401);
         
         var existingEmail = await _unitOfWork.Users.GetByEmailAsync(dto.NewEmail);
         if (existingEmail != null)
-            throw new Exception("Email is already in use");
+            throw new AppException("Email is already in use", 400);
         
         var code =  _tokenGenerator.GenerateSecureToken();
         var tokenHash = HashToken(code);
@@ -232,11 +234,11 @@ public class AuthService(
         var token = await _unitOfWork.EmailChangeTokens.GetValidTokenAsync(tokenHash);
         
         if (token == null || token.ExpiresAt < DateTime.UtcNow || token.IsUsed || token.UserId != userId) 
-            throw new Exception("Invalid or expired token");
+            throw new AppException("Invalid or expired token", 400);
         
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
 
         user.Email = token.NewEmail;
         token.IsUsed = true;
@@ -250,14 +252,14 @@ public class AuthService(
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
         
         if (!_passwordHasher.VerifyPassword(dto.Password, user.PasswordHash))
-            throw new Exception("Invalid password");
+            throw new AppException("Invalid password", 401);
         
         var existingNumber = await _unitOfWork.Users.GetByPhoneNumberAsync(dto.NewPhoneNumber);
         if (existingNumber != null)
-            throw new Exception("Phone number is already in use");
+            throw new AppException("Phone number is already in use", 400);
         
         var code = _tokenGenerator.GenerateSecureToken();
         var tokenHash = HashToken(code);
@@ -283,11 +285,11 @@ public class AuthService(
         var token = await _unitOfWork.PhoneChangeTokens.GetValidTokenAsync(tokenHash);
         
         if (token == null || token.ExpiresAt < DateTime.UtcNow || token.IsUsed || token.UserId != userId)
-            throw new Exception("Invalid or expired token");
+            throw new AppException("Invalid or expired token", 400);
         
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
         
         user.PhoneNumber = token.NewPhoneNumber;
         token.IsUsed = true;
@@ -305,11 +307,11 @@ public class AuthService(
         var token = await _unitOfWork.EmailVerificationTokens.GetValidTokenAsync(tokenHash);
         
         if (token == null || token.ExpiresAt < DateTime.UtcNow || token.UserId != userId || token.IsUsed)
-            throw new Exception("Invalid or expired token");
+            throw new AppException("Invalid or expired token", 400);
         
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new AppException("User not found", 404);
         
         user.IsEmailVerified = true;
         token.IsUsed = true;
@@ -317,5 +319,32 @@ public class AuthService(
         _unitOfWork.Users.Update(user);
         _unitOfWork.EmailVerificationTokens.Update(token);
         await _unitOfWork.SaveChangesAsync();
+        await _emailService.SendEmailVerifiedConfirmationAsync(user.Email);
+    }
+    
+    public async Task ResendVerificationEmailAsync(int userId)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+            throw new AppException("User not found", 404);
+
+        if (user.IsEmailVerified)
+            throw new AppException("Email is already verified", 400);
+
+        var code = _tokenGenerator.GenerateSecureToken();
+        var tokenHash = HashToken(code);
+
+        var verificationToken = new EmailVerificationToken
+        {
+            UserId = user.Id,
+            TokenHash = tokenHash,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            IsUsed = false
+        };
+
+        await _unitOfWork.EmailVerificationTokens.AddAsync(verificationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendVerificationEmailAsync(user.Email, code, "email");
     }
 }

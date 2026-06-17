@@ -6,4 +6,5 @@ public interface IEmailService
     Task SendPasswordResetEmailAsync(string email, string code);
     Task SendEmailChangeVerificationAsync(string email, string code);
     Task SendPhoneChangeConfirmationAsync(string email, string newPhoneNumber);
+    Task SendEmailVerifiedConfirmationAsync(string email);
 }
