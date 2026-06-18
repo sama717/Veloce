@@ -1,4 +1,5 @@
 using System.Text;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,12 @@ public class Program
         var jwtKey =  builder.Configuration["Jwt:Key"];
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
         var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var cloudinarySettings = builder.Configuration.GetSection("Cloudinary");
+        var cloudinary = new Cloudinary(new Account(
+            cloudinarySettings["CloudName"],
+            cloudinarySettings["ApiKey"],
+            cloudinarySettings["ApiSecret"]
+        ));
 
         // Add services to the container.
 
@@ -53,6 +60,8 @@ public class Program
         builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         builder.Services.AddScoped<ITokenService, TokenService>();
         builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
+        builder.Services.AddSingleton(cloudinary);
+        builder.Services.AddScoped<IImageService, ImageService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

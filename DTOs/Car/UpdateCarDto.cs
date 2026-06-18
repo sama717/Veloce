@@ -11,4 +11,8 @@ public class UpdateCarDto
     public decimal? PricePerDay { get; set; }
     public int? Quantity { get; set; }
     public CarStatus? Status { get; set; }
+    
+    public List<IFormFile>? NewImages { get; set; }
+    public List<int>? ImageIdsToDelete { get; set; }
+    public int? MainImageId { get; set; }
 }
