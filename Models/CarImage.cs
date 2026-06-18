@@ -7,4 +7,5 @@ public class CarImage
     public int CarId { get; set; }
     public Car Car { get; set; }
     public bool IsMain { get; set; } = false;
+    public int? DisplayOrder { get; set; } 
 }

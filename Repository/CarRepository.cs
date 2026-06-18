@@ -13,6 +13,7 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
     public async Task<IEnumerable<Car>> GetFilteredAsync(CarFilterParams carFilterParams)
     {
         return await _dbSet
+            .Where(c => c.Status != CarStatus.Deleted)
             .Where(c => 
                 (carFilterParams.Brand == null || c.Brand == carFilterParams.Brand) &&
                 (carFilterParams.Model == null || c.Model == carFilterParams.Model) &&
@@ -31,6 +32,7 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
     {
         return await _dbSet
             .Include(i => i.AssetOwnership)
+            .Where(c => c.Status != CarStatus.Deleted)
             .Where(i => i.AssetOwnership.DealershipId == dealershipId)
             .ToListAsync();
     }
@@ -38,6 +40,7 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
     public async Task<IEnumerable<Car>> GetAvailableForRentAsync()
     {
         return await _dbSet
+            .Where(c => c.Status != CarStatus.Deleted)
             .Where(i => i.Type == ListingType.Rent && i.AvailableQuantity > 0)
             .ToListAsync();
     }
@@ -45,6 +48,7 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
     public async Task<IEnumerable<Car>> GetAvailableForSaleAsync()
     {
         return await _dbSet
+            .Where(c => c.Status != CarStatus.Deleted)
             .Where(i => i.Type == ListingType.Sale && i.AvailableQuantity > 0)
             .ToListAsync();
     }
@@ -53,6 +57,8 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
     {
         return await _dbSet
             .Include(i => i.Images)
+            .Include(i => i.AssetOwnership)
+                .ThenInclude(a => a.User)
             .FirstOrDefaultAsync(i => i.Id == id);
     }
 }

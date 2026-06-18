@@ -44,6 +44,31 @@ public class MappingProfile : Profile
                 opt => 
                     opt.MapFrom(src => src.Dealership != null ? src.Dealership.Name : string.Empty));
         
+        CreateMap<Car, CarDto>()
+            .ForMember(dest => dest.Type, 
+                opt => 
+                    opt.MapFrom(src => src.Type.ToString()))
+            .ForMember(dest => dest.Status, 
+                opt => 
+                    opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Condition, 
+                opt =>
+                    opt.MapFrom(src => src.Condition.ToString()))
+            .ForMember(dest => dest.ImageUrls, 
+                opt => 
+                    opt.MapFrom(src => src.Images.Select(i => i.ImageUrl)))
+            .ForMember(dest => dest.OwnerType,
+                opt => 
+                    opt.MapFrom(src => src.AssetOwnership.UserId != null ? 
+                        "User" : "Dealership"))
+            .ForMember(dest => dest.OwnerUserId,
+                opt => 
+                    opt.MapFrom(src => src.AssetOwnership.UserId))
+            .ForMember(dest => dest.OwnerUserName,
+                opt => 
+                    opt.MapFrom(src => src.AssetOwnership.User != null ? 
+                        src.AssetOwnership.User.Username : null));
+        
         CreateMap<CreateCarDto, Car>()
             .ForMember(dest => dest.Status, 
                 opt => opt.Ignore())

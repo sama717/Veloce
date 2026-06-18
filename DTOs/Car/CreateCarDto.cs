@@ -47,4 +47,7 @@ public class CreateCarDto
     
     [Required]
     public int DealershipId { get; set; }
+    
+    public int? OwnerId { get; set; }
+    public List<IFormFile>? Images { get; set; }
 }

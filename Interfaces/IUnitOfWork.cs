@@ -14,6 +14,7 @@ public interface IUnitOfWork : IDisposable
     IPhoneChangeTokenRepository PhoneChangeTokens { get; }
     IPasswordResetTokenRepository PasswordResetTokens { get; }
     IEmailVerificationTokenRepository EmailVerificationTokens { get; }
+    ICarImageRepository CarImages { get; } 
     
     Task<int> SaveChangesAsync();
 }
