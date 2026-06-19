@@ -64,6 +64,9 @@ public class Program
         builder.Services.AddSingleton(cloudinary);
         builder.Services.AddScoped<IImageService, ImageService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<ICarService, CarService>();
+        builder.Services.AddScoped<IDealershipService, DealershipService>();
+        builder.Services.AddScoped<IBookingService, BookingService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

@@ -111,5 +111,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
             .ForMember(dest => dest.DealershipName, opt => opt.MapFrom(src => src.Dealership.Name));
+        
+        CreateMap<Booking, BookingDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.BookingType, opt => opt.MapFrom(src => src.BookingType.ToString()));
+
+        CreateMap<RentalDetail, RentalDetailDto>();
+        CreateMap<ConsultationDetail, ConsultationDetailDto>();
     }
 }

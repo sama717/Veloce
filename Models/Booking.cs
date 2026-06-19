@@ -10,6 +10,7 @@ public class Booking
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public BookingStatus Status { get; set; }
     public BookingType BookingType { get; set; }
+    public bool IsDeleted { get; set; }
 
     public Car Car { get; set; }
     public User User { get; set; }
