@@ -124,7 +124,7 @@ public class BookingService(IUnitOfWork unitOfWork, IMapper mapper) : IBookingSe
         if (booking == null)
             throw new AppException("Booking not found", 404);
         
-        if (booking.Status == BookingStatus.Canceled || booking.Status == BookingStatus.Completed)
+        if (booking.Status == BookingStatus.Canceled || booking.Status == BookingStatus.Completed || booking.Status == BookingStatus.Rejected)
             throw new AppException($"Cannot update booking with status '{booking.Status}'", 400);
 
         booking.Status = dto.Status;
@@ -163,7 +163,7 @@ public class BookingService(IUnitOfWork unitOfWork, IMapper mapper) : IBookingSe
                 throw new AppException("Cannot cancel within 3 days of rental start", 400);
         }
         
-        if (booking.Status == BookingStatus.Canceled || booking.Status == BookingStatus.Completed)
+        if (booking.Status == BookingStatus.Canceled || booking.Status == BookingStatus.Completed || booking.Status == BookingStatus.Rejected)
             throw new AppException($"Cannot cancel booking with status '{booking.Status}'", 400);
     
         booking.Status = BookingStatus.Canceled;
