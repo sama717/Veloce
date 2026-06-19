@@ -68,6 +68,7 @@ public class Program
         builder.Services.AddScoped<IDealershipService, DealershipService>();
         builder.Services.AddScoped<IBookingService, BookingService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddScoped<IRentalContractService, RentalContractService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
