@@ -102,5 +102,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Status, 
                 opt => 
                     opt.MapFrom(src => src.Status.ToString()));
+        
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+            .ForMember(dest => dest.IsEmailVerified, opt => opt.MapFrom(src => src.IsEmailVerified));
+        
+        CreateMap<EmployeeProfile, EmployeeResponseDto>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.DealershipName, opt => opt.MapFrom(src => src.Dealership.Name));
     }
 }

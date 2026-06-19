@@ -19,6 +19,7 @@ public class UnitOfWork : IUnitOfWork
     public IPasswordResetTokenRepository PasswordResetTokens { get; }
     public IEmailVerificationTokenRepository EmailVerificationTokens { get; }
     public ICarImageRepository CarImages { get; }  
+    public IEmployeeProfileRepository EmployeeProfiles { get; } 
 
     public UnitOfWork(VeloceDbContext context)
     {
@@ -35,6 +36,7 @@ public class UnitOfWork : IUnitOfWork
         PasswordResetTokens = new PasswordResetTokenRepository(_context);
         EmailVerificationTokens = new EmailVerificationTokenRepository(_context);
         CarImages = new CarImageRepository(_context);
+        EmployeeProfiles = new EmployeeProfileRepository(_context);
     }
 
     public async Task<int> SaveChangesAsync()

@@ -54,6 +54,7 @@ public class Program
         builder.Services.AddScoped<IPhoneChangeTokenRepository, PhoneChangeTokenRepository>();
         builder.Services.AddScoped<IAssetOwnershipRepository, AssetOwnershipRepository>();
         builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
+        builder.Services.AddScoped<IEmployeeProfileRepository, EmployeeProfileRepository>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
@@ -62,6 +63,7 @@ public class Program
         builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
         builder.Services.AddSingleton(cloudinary);
         builder.Services.AddScoped<IImageService, ImageService>();
+        builder.Services.AddScoped<IUserService, UserService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
