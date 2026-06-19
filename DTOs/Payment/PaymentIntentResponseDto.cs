@@ -5,4 +5,6 @@ public class PaymentIntentResponseDto
     public string ClientSecret { get; set; }
     public string PaymentIntentId { get; set; }
     public decimal Amount { get; set; }
+    public decimal DealershipCut { get; set; }
+    public decimal OwnerPayout { get; set; }
 }
