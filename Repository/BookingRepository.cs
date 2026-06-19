@@ -12,28 +12,38 @@ public class BookingRepository(VeloceDbContext context) : GenericRepository<Book
     public async Task<IEnumerable<Booking>> GetByUserIdAsync(int userId)
     {
         return await _dbSet
-            .Where(b => b.UserId == userId)
+            .Include(b => b.Car)
+            .Include(b => b.RentalDetail)
+            .Include(b => b.ConsultationDetail)
+            .Where(b => b.UserId == userId && !b.IsDeleted)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Booking>> GetByStatusAsync(BookingStatus status)
     {
         return await _dbSet
-            .Where(b => b.Status == status)
+            .Include(b => b.Car)
+            .Include(b => b.User)
+            .Where(b => b.Status == status && !b.IsDeleted)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Booking>> GetByTypeAsync(BookingType bookingType)
     {
         return await _dbSet
-            .Where(b => b.BookingType == bookingType)
+            .Include(b => b.Car)
+            .Include(b => b.User)
+            .Where(b => b.BookingType == bookingType && !b.IsDeleted)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Booking>> GetByCarIdAsync(int carId)
     {
         return await _dbSet
-            .Where(b => b.CarId == carId)
+            .Include(b => b.User)
+            .Include(b => b.RentalDetail)
+            .Include(b => b.ConsultationDetail)
+            .Where(b => b.CarId == carId && !b.IsDeleted)
             .ToListAsync();
     }
 
@@ -41,17 +51,23 @@ public class BookingRepository(VeloceDbContext context) : GenericRepository<Book
     {
         return await _dbSet
             .Include(b => b.RentalDetail)
+            .Include(b => b.Car)
+            .Include(b => b.User)
             .Where(b => b.RentalDetail != null &&
                         b.RentalDetail.StartDate >= from &&
-                        b.RentalDetail.EndDate <= to)
+                        b.RentalDetail.EndDate <= to &&
+                        !b.IsDeleted)
             .ToListAsync();
     }
 
     public async Task<Booking?> GetWithDetailsAsync(int id)
     {
         return await _dbSet
+            .Include(b => b.User)
+            .Include(b => b.Car)
             .Include(b => b.RentalDetail)
             .Include(b => b.ConsultationDetail)
-            .FirstOrDefaultAsync(b => b.Id == id);
+                .ThenInclude(c => c.Dealership)
+            .FirstOrDefaultAsync(b => b.Id == id && !b.IsDeleted);
     }
 }
