@@ -1,0 +1,95 @@
+<div class="min-h-screen px-6 py-12 md:px-12 max-w-6xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-2 mb-10 pb-6 border-b-2 border-black">
+    <div>
+      <p class="font-mono text-xs uppercase tracking-widest text-green mb-1">
+        @if (isAdmin) { System / Admin } @else if (isManager) { Dealership / Manager }
+      </p>
+      <h1 class="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-black">
+        Dashboard
+      </h1>
+    </div>
+    <p class="text-text-gray text-sm font-medium">
+      @if (isAdmin) {
+        Full overview across every dealership on Veloce
+      } @else if (isManager) {
+        What's happening at your dealership today
+      }
+    </p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col justify-center items-center py-24 gap-4">
+      <div class="spinner"></div>
+      <p class="font-mono text-xs uppercase tracking-widest text-text-gray">Loading dashboard…</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="p-6 border-2 border-black bg-white rounded-2xl text-center">
+      <p class="font-display text-lg font-bold uppercase text-black mb-1">Couldn't load your dashboard</p>
+      <p class="text-text-gray text-sm mb-4">{{ errorMessage() }}</p>
+      <button (click)="loadStats()" class="btn-green text-sm">Try again</button>
+    </div>
+  } @else {
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <div class="bg-white border-2 border-black rounded-2xl p-5">
+        <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-text-gray mb-2">Total Users</p>
+        <p class="font-display text-3xl font-bold text-black">{{ stats().totalUsers }}</p>
+      </div>
+      <div class="bg-white border-2 border-black rounded-2xl p-5">
+        <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-text-gray mb-2">Total Cars</p>
+        <p class="font-display text-3xl font-bold text-black">{{ stats().totalCars }}</p>
+      </div>
+      <div class="bg-white border-2 border-black rounded-2xl p-5">
+        <p class="font-mono text-[10px] font-bold uppercase tracking-wider text-text-gray mb-2">Total Bookings</p>
+        <p class="font-display text-3xl font-bold text-black">{{ stats().totalBookings }}</p>
+      </div>
+    </div>
+
+    <!-- Primary actions -->
+    <p class="font-mono text-[10px] font-bold uppercase tracking-widest text-text-gray mb-3">Manage</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <a routerLink="/admin/bookings"
+         class="group relative border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all text-center">
+        @if (stats().pendingBookings > 0) {
+          <span class="absolute -top-3 -right-3 bg-green text-white text-[11px] font-bold w-7 h-7 flex items-center justify-center rounded-full border-2 border-black">
+            {{ stats().pendingBookings }}
+          </span>
+        }
+        <div class="text-4xl mb-2">📋</div>
+        <h3 class="font-display font-bold uppercase text-lg">All Bookings</h3>
+        <p class="text-xs text-text-gray mt-1">View and manage every booking</p>
+      </a>
+
+      <a routerLink="/admin/cars"
+         class="group border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all text-center">
+        <div class="text-4xl mb-2">🚗</div>
+        <h3 class="font-display font-bold uppercase text-lg">All Cars</h3>
+        <p class="text-xs text-text-gray mt-1">View and manage every listing</p>
+      </a>
+
+      @if (isAdmin) {
+        <a routerLink="/admin/dealerships"
+           class="group border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all text-center">
+          <div class="text-4xl mb-2">🏢</div>
+          <h3 class="font-display font-bold uppercase text-lg">Dealerships</h3>
+          <p class="text-xs text-text-gray mt-1">Manage every dealership on Veloce</p>
+        </a>
+      }
+    </div>
+
+    @if (isManager) {
+      <p class="font-mono text-[10px] font-bold uppercase tracking-widest text-text-gray mb-3 mt-8">Your dealership</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a routerLink="/list-car"
+           class="group border-2 border-black rounded-2xl p-6 bg-green-tint hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all text-center">
+          <div class="text-4xl mb-2">➕</div>
+          <h3 class="font-display font-bold uppercase text-lg">Add Listing</h3>
+          <p class="text-xs text-text-gray mt-1">List a new car for your dealership</p>
+        </a>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,91 @@
+<div class="bg-white min-h-screen px-6 py-12 md:px-12 max-w-4xl mx-auto">
+  
+  <h1 class="font-display text-4xl font-bold uppercase tracking-tight text-black mb-8">
+    Account Settings
+  </h1>
+
+  <div class="space-y-8">
+    <div class="border-2 border-black rounded-2xl p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+      <h3 class="font-display text-xl font-bold uppercase mb-2">Deactivate Account</h3>
+      <p class="text-sm text-gray-500 mb-4">
+        Your account will be temporarily disabled. You can reactivate it later by contacting support.
+      </p>
+
+      <form (ngSubmit)="deactivateAccount()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-500">Password</label>
+          <input
+            type="password"
+            [(ngModel)]="deactivatePassword"
+            name="deactivatePassword"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green"
+            required
+          />
+        </div>
+
+        @if (deactivateError()) {
+          <div class="text-red-600 text-sm">{{ deactivateError() }}</div>
+        }
+        @if (deactivateSuccess()) {
+          <div class="text-green-600 text-sm">{{ deactivateSuccess() }}</div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="isDeactivating()"
+          class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50"
+        >
+          {{ isDeactivating() ? 'Processing...' : 'Deactivate Account' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="border-2 border-black rounded-2xl p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-red-500">
+      <h3 class="font-display text-xl font-bold uppercase mb-2 text-red-600">Permanently Delete Account</h3>
+      <p class="text-sm text-gray-500 mb-4">
+        This action is <strong>irreversible</strong>. All your data, bookings, and listings will be permanently removed.
+      </p>
+
+      <form (ngSubmit)="deleteAccount()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-500">Password</label>
+          <input
+            type="password"
+            [(ngModel)]="deletePassword"
+            name="deletePassword"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-red-500"
+            required
+          />
+        </div>
+
+        <div class="flex items-center gap-3">
+          <input
+            type="checkbox"
+            [checked]="confirmDelete()"
+            (change)="toggleConfirmDelete()"
+            class="w-5 h-5 border-2 border-black rounded"
+          />
+          <label class="text-sm font-medium text-black">
+            I understand that this action is permanent and cannot be undone.
+          </label>
+        </div>
+
+        @if (deleteError()) {
+          <div class="text-red-600 text-sm">{{ deleteError() }}</div>
+        }
+        @if (deleteSuccess()) {
+          <div class="text-green-600 text-sm">{{ deleteSuccess() }}</div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="isDeleting()"
+          class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50"
+        >
+          {{ isDeleting() ? 'Processing...' : 'Delete Permanently' }}
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>

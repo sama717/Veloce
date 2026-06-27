@@ -1,0 +1,108 @@
+<div class="bg-white min-h-screen px-6 py-12 md:px-12 max-w-6xl mx-auto">
+  <h1 class="font-display text-4xl font-bold uppercase tracking-tight text-black mb-8">
+    @if (isProvider) {
+      Bookings
+    } @else if (isSystemUser) {
+      All Bookings
+    } @else {
+      My Bookings
+    }
+  </h1>
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-20">
+      <div class="spinner"></div>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="p-4 border-2 border-red-500 text-red-600 rounded-xl text-sm">
+      {{ errorMessage() }}
+    </div>
+  } @else if (bookings().length === 0) {
+    <div class="text-center py-20">
+      <p class="text-lg text-gray-500">
+        @if (isProvider) {
+          No bookings for your cars yet.
+        } @else if (isSystemUser) {
+          No bookings in the system.
+        } @else {
+          No bookings found.
+        }
+      </p>
+      @if (!isSystemUser) {
+        <a routerLink="/catalog" class="btn-green inline-block mt-4">Browse Cars</a>
+      }
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (booking of bookings(); track booking.id) {
+        <div class="border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <div class="flex flex-wrap justify-between items-start gap-4">
+            <div>
+              <div class="flex items-center gap-3">
+                <h3 class="font-display text-xl font-bold uppercase">Booking #{{ booking.id }}</h3>
+                <span class="px-3 py-1 border-2 rounded-full text-xs font-bold {{ getStatusBadge(booking.status) }}">
+                  {{ booking.status }}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500">{{ booking.bookingType }} · {{ booking.createdAt | date }}</p>
+
+              <!-- Car Name -->
+              <p class="text-sm font-medium">
+                Car: {{ booking.car?.brand || 'Car ID: ' + booking.carId }} {{ booking.car?.model || '' }}
+              </p>
+
+              <!-- Renter Name (for providers) -->
+              @if (isProvider) {
+                <p class="text-sm">
+                  Renter: {{ booking.user?.firstName }} {{ booking.user?.lastName }}
+                </p>
+              }
+
+              @if (booking.rentalDetail) {
+                <p class="text-sm text-green font-bold">Total: ${{ booking.rentalDetail.totalPrice }}</p>
+                <p class="text-xs text-gray-400">{{ booking.rentalDetail.startDate | date }} → {{ booking.rentalDetail.endDate | date }}</p>
+              }
+
+              @if (booking.consultationDetail) {
+                <p class="text-sm">Preferred Date: {{ booking.consultationDetail.preferredDate | date }}</p>
+                <p class="text-xs text-gray-400">
+                  Dealership: {{ booking.consultationDetail.dealership?.name || 'Dealership ID: ' + booking.consultationDetail.dealershipId }}
+                </p>
+              }
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <!-- ✅ Status Dropdown for Providers & System Users -->
+              @if (isProvider || isSystemUser) {
+                <select 
+                  (change)="updateStatus(booking.id, $any($event.target).value)"
+                  [value]="booking.status"
+                  class="text-xs font-bold px-2 py-1 border-2 border-black rounded-xl bg-white"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Confirmed">Confirm</option>
+                  <option value="Completed">Complete</option>
+                  <option value="Canceled">Cancel</option>
+                  <option value="Rejected">Reject</option>
+                </select>
+              }
+
+              <!-- Download Contract (only for confirmed rentals) -->
+              @if (booking.bookingType === 'Rental' && booking.status === 'Confirmed') {
+                <button (click)="downloadContract(booking.id)" class="bg-black hover:bg-neutral-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                  Contract
+                </button>
+              }
+
+              <!-- Cancel Booking (only for pending/confirmed by customer or system user) -->
+              @if ((booking.status === 'Pending' || booking.status === 'Confirmed') && (isCustomer || isSystemUser)) {
+                <button (click)="cancelBooking(booking.id)" class="border-2 border-red-500 text-red-600 hover:bg-red-50 text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                  Cancel
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

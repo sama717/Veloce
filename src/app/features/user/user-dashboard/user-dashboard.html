@@ -1,0 +1,84 @@
+<div class="bg-light min-h-screen px-6 py-12 md:px-12 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="font-display text-4xl font-bold uppercase tracking-tight text-black">
+        My Account
+      </h1>
+      <p class="text-text-gray">Manage your bookings, profile, and account settings.</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-20">
+      <div class="spinner"></div>
+    </div>
+  } @else if (profile()) {
+    <!-- Verification Alert -->
+    @if (!profile()?.isEmailVerified) {
+      <div
+        class="bg-yellow-50 border-2 border-yellow-400 rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-4"
+      >
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">⚠️</span>
+          <div>
+            <h4 class="font-bold text-yellow-800">Email Not Verified</h4>
+            <p class="text-sm text-yellow-700">
+              Please verify your email address to book rentals and list cars.
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button
+            (click)="resendVerification()"
+            [disabled]="isSendingVerification()"
+            class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50 text-sm"
+          >
+            {{ isSendingVerification() ? 'Sending...' : 'Resend Email' }}
+          </button>
+        </div>
+        @if (verificationMessage()) {
+          <div class="w-full text-sm text-yellow-700 mt-2">
+            {{ verificationMessage() }}
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Dashboard Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Bookings Card -->
+      <a
+        routerLink="bookings"
+        class="border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+      >
+        <div class="text-4xl mb-4">📋</div>
+        <h3 class="font-display text-xl font-bold uppercase">My Bookings</h3>
+        <p class="text-sm text-gray-500">View all your bookings and download contracts</p>
+      </a>
+
+      <!-- Profile Card -->
+      <a
+        routerLink="profile"
+        class="border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+      >
+        <div class="text-4xl mb-4">👤</div>
+        <h3 class="font-display text-xl font-bold uppercase">My Profile</h3>
+        <p class="text-sm text-gray-500">Update your profile and change password</p>
+      </a>
+
+      <!-- Settings Card – now points to profile -->
+      <a
+        routerLink="settings"
+        class="border-2 border-black rounded-2xl p-6 bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+      >
+        <div class="text-4xl mb-4">⚙️</div>
+        <h3 class="font-display text-xl font-bold uppercase">Settings</h3>
+        <p class="text-sm text-gray-500">Deactivate or delete your account</p>
+      </a>
+    </div>
+  }
+
+  <div class="mt-8">
+    <router-outlet></router-outlet>
+  </div>
+</div>

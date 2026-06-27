@@ -1,0 +1,318 @@
+<div class="bg-white min-h-screen px-6 py-12 md:px-12 max-w-4xl mx-auto">
+  <div
+    class="border-4 border-black rounded-3xl p-8 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+  >
+    <h1 class="font-display text-3xl font-bold uppercase tracking-tight text-black mb-2">
+      Edit Car
+    </h1>
+    <p class="text-xs font-medium text-gray-500 mb-8 uppercase tracking-wider">
+      Update your vehicle listing
+    </p>
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-20">
+        <div class="spinner"></div>
+      </div>
+    } @else {
+      @if (errorMessage()) {
+        <div
+          class="p-4 mb-6 border-2 border-red-500 text-red-600 rounded-xl text-xs font-bold bg-white"
+        >
+          {{ errorMessage() }}
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div
+          class="p-4 mb-6 border-2 border-green-500 text-green-600 rounded-xl text-xs font-bold bg-white"
+        >
+          {{ successMessage() }}
+        </div>
+      }
+
+      <form [formGroup]="carForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Brand & Model -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Brand *</label
+            >
+            <input
+              type="text"
+              formControlName="brand"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['brand'].invalid && f['brand'].touched"
+            />
+            @if (f['brand'].invalid && f['brand'].touched) {
+              <p class="text-red-500 text-xs mt-1">Brand is required</p>
+            }
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Model *</label
+            >
+            <input
+              type="text"
+              formControlName="model"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['model'].invalid && f['model'].touched"
+            />
+            @if (f['model'].invalid && f['model'].touched) {
+              <p class="text-red-500 text-xs mt-1">Model is required</p>
+            }
+          </div>
+        </div>
+
+        <!-- Year & Color -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Year *</label
+            >
+            <input
+              type="number"
+              formControlName="year"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['year'].invalid && f['year'].touched"
+            />
+            @if (f['year'].invalid && f['year'].touched) {
+              <p class="text-red-500 text-xs mt-1">Valid year is required</p>
+            }
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Color *</label
+            >
+            <input
+              type="text"
+              formControlName="color"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['color'].invalid && f['color'].touched"
+            />
+            @if (f['color'].invalid && f['color'].touched) {
+              <p class="text-red-500 text-xs mt-1">Color is required</p>
+            }
+          </div>
+        </div>
+
+        <!-- Mileage & Seats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Mileage (km) *</label
+            >
+            <input
+              type="number"
+              formControlName="mileage"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['mileage'].invalid && f['mileage'].touched"
+            />
+            @if (f['mileage'].invalid && f['mileage'].touched) {
+              <p class="text-red-500 text-xs mt-1">Mileage is required</p>
+            }
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Seats *</label
+            >
+            <input
+              type="number"
+              formControlName="seats"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['seats'].invalid && f['seats'].touched"
+            />
+            @if (f['seats'].invalid && f['seats'].touched) {
+              <p class="text-red-500 text-xs mt-1">Seats must be between 1 and 20</p>
+            }
+          </div>
+        </div>
+
+        <!-- Type & Condition -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Listing Type *</label
+            >
+            <select
+              formControlName="type"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium bg-white focus:outline-none focus:border-green"
+            >
+              <option [value]="1">For Rent</option>
+              <option [value]="0">For Sale</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Condition *</label
+            >
+            <select
+              formControlName="condition"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium bg-white focus:outline-none focus:border-green"
+            >
+              <option [value]="0">New</option>
+              <option [value]="1">Used</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Price / Price Per Day -->
+        <!-- Price / Price Per Day -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black">
+              {{ carForm.get('type')?.value === 'Sale' ? 'Price (Sale)' : 'Price Per Day (Rent)' }}
+            </label>
+            <input
+              type="number"
+              [formControlName]="carForm.get('type')?.value === 'Sale' ? 'price' : 'pricePerDay'"
+              [placeholder]="carForm.get('type')?.value === 'Sale' ? 'e.g., 50000' : 'e.g., 200'"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Quantity *</label
+            >
+            <input
+              type="number"
+              formControlName="quantity"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green"
+              [class.border-red-500]="f['quantity'].invalid && f['quantity'].touched"
+            />
+            @if (f['quantity'].invalid && f['quantity'].touched) {
+              <p class="text-red-500 text-xs mt-1">Quantity is required</p>
+            }
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+            >Description</label
+          >
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="Describe the car condition, features, etc."
+            class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none focus:border-green resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Dealership (for SystemUsers) -->
+        @if (!isProvider()) {
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Dealership *</label
+            >
+            <select
+              formControlName="dealershipId"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium bg-white focus:outline-none focus:border-green"
+            >
+              <option [value]="0" disabled>Select a dealership</option>
+              @for (dealer of dealerships; track dealer.id) {
+                <option [value]="dealer.id">{{ dealer.name }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- Status (for SystemUsers) -->
+        @if (!isProvider()) {
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Status</label
+            >
+            <select
+              formControlName="status"
+              class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium bg-white focus:outline-none focus:border-green"
+            >
+              <option [value]="0">Available</option>
+              <option [value]="1">Rented</option>
+              <option [value]="2">Sold</option>
+            </select>
+          </div>
+        }
+
+        <!-- Existing Images -->
+        @if (existingImages.length > 0) {
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+              >Current Images</label
+            >
+            <div class="flex flex-wrap gap-2 mt-2">
+              @for (img of existingImages; track img.id) {
+                <div class="relative w-20 h-20 border-2 border-black rounded-xl overflow-hidden">
+                  <img [src]="img.imageUrl" class="w-full h-full object-cover" />
+                  @if (img.isMain) {
+                    <span
+                      class="absolute bottom-0 left-0 right-0 bg-green text-white text-[8px] font-bold text-center py-0.5"
+                      >MAIN</span
+                    >
+                  }
+                  <button
+                    type="button"
+                    (click)="removeExistingImage(img.id)"
+                    class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs font-bold hover:bg-red-700 transition-colors"
+                    title="Delete image"
+                  >
+                    ×
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- New Images Upload -->
+        <div>
+          <label class="block text-[10px] uppercase tracking-wider font-bold text-black"
+            >Add New Images</label
+          >
+          <input
+            type="file"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            multiple
+            class="w-full px-3 py-3 border-2 border-black rounded-xl text-sm font-medium focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-black file:text-white file:text-sm file:font-bold hover:file:bg-neutral-800"
+          />
+
+          <!-- New Image Previews -->
+          @if (previewUrls.length > 0) {
+            <div class="flex flex-wrap gap-2 mt-3">
+              @for (url of previewUrls; track $index) {
+                <div class="relative w-20 h-20 border-2 border-black rounded-xl overflow-hidden">
+                  <img [src]="url" class="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    (click)="removeFile($index)"
+                    class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs font-bold hover:bg-red-700 transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Submit -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-4">
+          <button
+            type="submit"
+            [disabled]="isSubmitting() || carForm.invalid"
+            class="w-full sm:w-auto bg-black hover:bg-neutral-800 disabled:bg-neutral-400 text-white font-bold text-sm py-4 px-8 rounded-xl transition-transform active:scale-95 cursor-pointer shadow-[4px_4px_0px_0px_rgba(22,163,74,1)]"
+          >
+            {{ isSubmitting() ? 'Updating...' : 'Update Car' }}
+          </button>
+          <button
+            type="button"
+            (click)="router.navigate(['/my-cars'])"
+            class="w-full sm:w-auto text-center border-2 border-black hover:bg-gray-50 text-black font-bold text-sm py-4 px-8 rounded-xl transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

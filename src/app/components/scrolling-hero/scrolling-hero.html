@@ -1,0 +1,48 @@
+<section #sectionRef class="relative bg-neutral-900 w-full min-h-screen">
+  <div
+    #phoneStageRef
+    class="relative flex min-h-screen items-center justify-center overflow-hidden px-6"
+  >
+    <div class="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 w-full">
+      
+      <div class="relative h-75 md:h-87.5">
+        <div
+          *ngFor="let panel of panels; let i = index"
+          #panelEl
+          class="panel-text-block absolute inset-0 flex flex-col justify-center text-center md:text-left"
+          [class.is-initial]="i === 0"
+        >
+          <p class="mb-3 font-display text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
+            {{ panel.eyebrow }}
+          </p>
+          <h2 class="font-display text-4xl font-bold leading-tight text-white md:text-5xl">
+            {{ panel.title }}
+          </h2>
+          <p class="mt-4 max-w-md font-body text-base text-white/70 md:text-lg">
+            {{ panel.body }}
+          </p>
+        </div>
+      </div>
+
+      <div class="relative mx-auto w-[260px] md:w-[300px]">
+        <div class="phone-container">
+          
+          <img [src]="phoneFrame" alt="" aria-hidden="true" class="phone-hardware-frame" />
+
+          <div class="phone-viewport-window">
+            <img
+              *ngFor="let panel of panels; let i = index"
+              #screenImg
+              [src]="panel.screen"
+              [alt]="panel.eyebrow + ' screen of the Veloce app'"
+              class="phone-mock-screen"
+              [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+            />
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

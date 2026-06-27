@@ -1,0 +1,193 @@
+<div class="bg-light min-h-screen px-6 py-12 md:px-12 max-w-6xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-2 mb-10 pb-6 border-b-2 border-black">
+    <div>
+      <p class="font-mono text-xs uppercase tracking-widest text-green mb-1">System / Admin</p>
+      <h1 class="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-black">
+        Dealerships
+      </h1>
+    </div>
+    <button (click)="toggleCreateForm()" class="btn-green text-sm">
+      {{ showCreateForm() ? 'Cancel' : '+ Add Dealership' }}
+    </button>
+  </div>
+
+  @if (successMessage()) {
+    <div class="p-4 border-2 border-green-500 text-green-700 rounded-xl text-sm font-bold bg-white mb-6">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="p-4 border-2 border-red-500 text-red-600 rounded-xl text-sm font-bold bg-white mb-6">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Create Form -->
+  @if (showCreateForm()) {
+    <div class="border-2 border-black rounded-2xl p-6 bg-white mb-8">
+      <h3 class="font-display text-lg font-bold uppercase mb-4">New Dealership</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">Name *</label>
+          <input
+            type="text"
+            [(ngModel)]="newDealership.name"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="Dealership name"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">Email *</label>
+          <input
+            type="email"
+            [(ngModel)]="newDealership.email"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="contact@dealer.com"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">Phone</label>
+          <input
+            type="text"
+            [(ngModel)]="newDealership.phoneNumber"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="+1234567890"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">Address</label>
+          <input
+            type="text"
+            [(ngModel)]="newDealership.address"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="123 Main St"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">City</label>
+          <input
+            type="text"
+            [(ngModel)]="newDealership.city"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="Los Angeles"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">State</label>
+          <input
+            type="text"
+            [(ngModel)]="newDealership.state"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="CA"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-gray-500">Country</label>
+          <input
+            type="text"
+            [(ngModel)]="newDealership.country"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl bg-white"
+            placeholder="USA"
+          />
+        </div>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button (click)="createDealership()" [disabled]="isSaving()" class="bg-black hover:bg-neutral-800 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">
+          {{ isSaving() ? 'Creating...' : 'Create Dealership' }}
+        </button>
+        <button (click)="toggleCreateForm()" class="border-2 border-black px-6 py-2 rounded-xl hover:bg-gray-50 transition-all">Cancel</button>
+      </div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="flex flex-col justify-center items-center py-24 gap-4">
+      <div class="spinner"></div>
+      <p class="font-mono text-xs uppercase tracking-widest text-text-gray">Loading dealerships…</p>
+    </div>
+  } @else if (dealerships().length === 0) {
+    <div class="text-center py-20 border-2 border-dashed border-gray-300 rounded-2xl">
+      <p class="text-lg text-gray-500">No dealerships found.</p>
+    </div>
+  } @else {
+    <!-- Dealership List -->
+    <div class="bg-white border-2 border-black rounded-2xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-black text-white">
+          <tr>
+            <th class="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider">Name</th>
+            <th class="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider">Email</th>
+            <th class="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider">Location</th>
+            <th class="px-4 py-3 text-right font-mono text-[10px] uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (dealer of dealerships(); track dealer.id) {
+            <tr class="border-b border-black last:border-b-0 hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3 font-medium">
+                @if (editingId() === dealer.id) {
+                  <input
+                    type="text"
+                    [(ngModel)]="editData.name"
+                    class="w-full px-2 py-1 border-2 border-black rounded-xl text-sm"
+                  />
+                } @else {
+                  {{ dealer.name }}
+                }
+              </td>
+              <td class="px-4 py-3">
+                @if (editingId() === dealer.id) {
+                  <input
+                    type="email"
+                    [(ngModel)]="editData.email"
+                    class="w-full px-2 py-1 border-2 border-black rounded-xl text-sm"
+                  />
+                } @else {
+                  {{ dealer.email }}
+                }
+              </td>
+              <td class="px-4 py-3">
+                @if (editingId() === dealer.id) {
+                  <div class="grid grid-cols-2 gap-1">
+                    <input
+                      type="text"
+                      [(ngModel)]="editData.city"
+                      class="px-2 py-1 border-2 border-black rounded-xl text-sm"
+                      placeholder="City"
+                    />
+                    <input
+                      type="text"
+                      [(ngModel)]="editData.state"
+                      class="px-2 py-1 border-2 border-black rounded-xl text-sm"
+                      placeholder="State"
+                    />
+                  </div>
+                } @else {
+                  {{ dealer.city }}, {{ dealer.state }}
+                }
+              </td>
+              <td class="px-4 py-3 text-right">
+                @if (editingId() === dealer.id) {
+                  <button (click)="saveEdit(dealer.id)" [disabled]="isSaving()" class="text-green font-bold text-xs hover:underline disabled:opacity-50 mr-3">
+                    Save
+                  </button>
+                  <button (click)="cancelEdit()" class="text-gray-500 font-bold text-xs hover:underline">Cancel</button>
+                } @else {
+                  <button (click)="startEdit(dealer)" class="text-black font-bold text-xs hover:underline mr-3">
+                    Edit
+                  </button>
+                  <button (click)="deleteDealership(dealer.id)" class="text-red-600 font-bold text-xs hover:underline">
+                    Delete
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

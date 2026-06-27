@@ -1,0 +1,53 @@
+.phone-container {
+  position: relative;
+  width: 100%;
+}
+
+.phone-hardware-frame {
+  position: relative;
+  width: 100%;
+  z-index: 20;
+  pointer-events: none;
+  display: block;
+}
+
+.phone-viewport-window {
+  position: absolute;
+  top: 2.2%;
+  bottom: 2.2%;
+  left: 4.5%;
+  right: 4.5%;
+  border-radius: 42px; 
+  overflow: hidden;
+  z-index: 10;
+  background-color: #000;
+}
+
+.phone-mock-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  object-position: top center;
+  will-change: opacity, transform;
+  opacity: 0;
+}
+
+.phone-mock-screen:first-child {
+  opacity: 1;
+}
+
+.panel-text-block {
+  opacity: 0;
+  transform: translateY(40px);
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+
+.panel-text-block.is-initial {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}

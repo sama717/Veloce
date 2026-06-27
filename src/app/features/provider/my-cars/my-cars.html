@@ -1,0 +1,57 @@
+<div class="bg-white min-h-screen px-6 py-12 md:px-12 max-w-6xl mx-auto">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="font-display text-4xl font-bold uppercase tracking-tight text-black">
+      My Cars
+    </h1>
+    <a routerLink="/list-car" class="bg-green hover:bg-green-hover text-white px-6 py-2 rounded-full font-medium text-sm transition-all">
+      List a Car
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-20">
+      <div class="spinner"></div>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="p-4 border-2 border-red-500 text-red-600 rounded-xl text-sm">
+      {{ errorMessage() }}
+    </div>
+  } @else if (cars().length === 0) {
+    <div class="text-center py-20 border-2 border-dashed border-gray-300 rounded-2xl">
+      <p class="text-lg text-gray-500">You haven't listed any cars yet.</p>
+      <a routerLink="/list-car" class="btn-green inline-block mt-4">List Your First Car</a>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (car of cars(); track car.id) {
+        <div class="border-2 border-black rounded-2xl overflow-hidden bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <div class="relative h-44 bg-gray-100">
+            <img [src]="car.imageUrls[0] || 'https://placehold.co/600x400/e5e7eb/6b7280?text=No+Image'" class="w-full h-full object-cover" />
+            <span class="absolute top-3 right-3 text-xs font-bold px-2 py-1 bg-white border-2 border-black rounded-full">
+              {{ car.type }}
+            </span>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display text-lg font-bold uppercase">{{ car.brand }} {{ car.model }}</h3>
+            <p class="text-sm text-gray-500">{{ car.year }} · {{ car.condition }}</p>
+            <p class="text-sm font-bold text-green mt-1">
+              @if (car.type === 'Sale') {
+                ${{ car.price?.toLocaleString() }}
+              } @else {
+                ${{ car.pricePerDay?.toLocaleString() }}/day
+              }
+            </p>
+            <div class="flex gap-2 mt-4">
+              <a [routerLink]="['/edit-car', car.id]" class="bg-black hover:bg-neutral-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                Edit
+              </a>
+              <button (click)="deleteCar(car.id)" class="border-2 border-red-500 text-red-600 hover:bg-red-50 text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

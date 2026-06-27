@@ -1,0 +1,161 @@
+<div class="bg-white min-h-screen px-6 py-12 md:px-12 flex flex-col lg:flex-row gap-8">
+  
+  <aside class="w-full lg:w-64 border-2 border-black rounded-2xl p-6 h-fit bg-white space-y-6">
+    <div>
+      <h2 class="font-display text-xl font-bold uppercase tracking-tight text-black">
+        Refine Fleet
+      </h2>
+      <p class="text-xs text-gray-500 font-medium mt-0.5">Filter via vehicle specifications</p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="space-y-1">
+        <label class="block text-[10px] uppercase tracking-wider font-bold text-black">Brand</label>
+        <input
+          type="text"
+          [ngModel]="filters().brand"
+          (input)="updateFilter('brand', $any($event.target).value)"
+          class="w-full px-3 py-2 border-2 border-black rounded-xl text-xs font-medium focus:outline-none"
+          placeholder="e.g., Porsche"
+        />
+      </div>
+
+      <div class="space-y-1">
+        <label class="block text-[10px] uppercase tracking-wider font-bold text-black">Model</label>
+        <input
+          type="text"
+          [ngModel]="filters().model"
+          (input)="updateFilter('model', $any($event.target).value)"
+          class="w-full px-3 py-2 border-2 border-black rounded-xl text-xs font-medium focus:outline-none"
+          placeholder="e.g., 911"
+        />
+      </div>
+
+      <div class="space-y-1">
+        <label class="block text-[10px] uppercase tracking-wider font-bold text-black">Listing Type</label>
+        <select
+          [ngModel]="filters().type"
+          (change)="updateFilter('type', $any($event.target).value)"
+          class="w-full px-3 py-2 border-2 border-black rounded-xl text-xs font-medium bg-white focus:outline-none"
+        >
+          <option [ngValue]="undefined">All Types</option>
+          <option [value]="0">For Sale</option>
+          <option [value]="1">For Rent</option>
+        </select>
+      </div>
+
+      <div class="space-y-1">
+        <label class="block text-[10px] uppercase tracking-wider font-bold text-black">Condition Status</label>
+        <select
+          [ngModel]="filters().condition"
+          (change)="updateFilter('condition', $any($event.target).value)"
+          class="w-full px-3 py-2 border-2 border-black rounded-xl text-xs font-medium bg-white focus:outline-none"
+        >
+          <option [ngValue]="undefined">All Conditions</option>
+          <option [value]="0">Brand New</option>
+          <option [value]="1">Pre-Owned</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider font-bold text-black">Min Price</label>
+          <input
+            type="number"
+            [ngModel]="filters().minPrice"
+            (input)="updateFilter('minPrice', $any($event.target).value)"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl text-xs font-medium focus:outline-none"
+            placeholder="0"
+          />
+        </div>
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-wider font-bold text-black">Max Price</label>
+          <input
+            type="number"
+            [ngModel]="filters().maxPrice"
+            (input)="updateFilter('maxPrice', $any($event.target).value)"
+            class="w-full px-3 py-2 border-2 border-black rounded-xl text-xs font-medium focus:outline-none"
+            placeholder="Max"
+          />
+        </div>
+      </div>
+    </div>
+
+    <button
+      (click)="clearFilters()"
+      type="button"
+      class="w-full py-2 border-2 border-black rounded-xl text-xs font-bold text-center hover:bg-gray-50 transition-colors"
+    >
+      Reset Layout Filters
+    </button>
+  </aside>
+
+  <main class="flex-1">
+    @if (isLoading()) {
+      <div class="flex flex-col items-center justify-center py-24 space-y-4">
+        <span class="w-8 h-8 border-4 border-green border-t-transparent rounded-full animate-spin"></span>
+        <p class="text-sm font-bold text-black uppercase tracking-wider">Loading...</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="p-4 border-2 border-red-500 text-red-600 rounded-xl text-sm font-bold text-center bg-white">
+        {{ errorMessage() }}
+      </div>
+    } @else if (cars().length === 0) {
+      <div class="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center text-gray-500 font-medium">
+        No vehicles found.
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @for (car of cars(); track car.id) {
+          <div class="border-2 border-black rounded-2xl overflow-hidden bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div class="relative h-44 border-b-2 border-black bg-gray-50">
+                <img
+                  [src]="getMainImage(car)"
+                  [alt]="car.brand"
+                  class="w-full h-full object-cover"
+                />
+                <span class="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border-2 border-black rounded-full bg-white text-black">
+                  {{ car.type }}
+                </span>
+              </div>
+
+              <div class="p-5 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    {{ car.year }} · {{ car.condition }}
+                  </span>
+                  <span class="text-[10px] font-bold text-gray-500 uppercase">
+                    📍 {{ car.mileage.toLocaleString() }} km
+                  </span>
+                </div>
+
+                <h3 class="font-display text-xl font-bold uppercase tracking-tight text-black">
+                  {{ car.brand }} <span class="font-medium text-gray-600">{{ car.model }}</span>
+                </h3>
+
+                <div class="text-base font-bold text-black">
+                  @if (car.type === 'Sale') {
+                    ${{ car.price?.toLocaleString() || '0' }}
+                  } @else {
+                    ${{ car.pricePerDay?.toLocaleString() || '0' }}<span class="text-xs font-normal text-gray-500">/day</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="p-5 pt-0">
+              <button
+                (click)="viewDetails(car.id)"
+                type="button"
+                class="w-full bg-black hover:bg-neutral-800 text-white font-bold text-xs py-3.5 px-4 rounded-xl transition-transform active:scale-95 cursor-pointer"
+              >
+                {{ car.type === 'Sale' ? 'Buy Now' : 'Book Now' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

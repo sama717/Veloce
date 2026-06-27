@@ -1,0 +1,111 @@
+<div class="bg-light min-h-screen px-6 py-12 md:px-12 max-w-6xl mx-auto">
+  <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-2 mb-10 pb-6 border-b-2 border-black">
+    <div>
+      <p class="font-mono text-xs uppercase tracking-widest text-green mb-1">
+        @if (isAdmin) { System / Admin } @else if (isManager) { Dealership / Manager }
+      </p>
+      <h1 class="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-black">
+        All Cars
+      </h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-text-gray">{{ filteredCars().length }} cars</span>
+      <a routerLink="/list-car" class="btn-green text-sm">
+        Add Car
+      </a>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="p-4 border-2 border-green-500 text-green-700 rounded-xl text-sm font-bold bg-white mb-6">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="p-4 border-2 border-red-500 text-red-600 rounded-xl text-sm font-bold bg-white mb-6">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <div class="flex flex-wrap items-center gap-4 mb-6">
+    <div>
+      <label class="block text-[10px] font-bold uppercase text-gray-500">Status</label>
+      <select
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event); applyFilters()"
+        class="px-3 py-1.5 border-2 border-black rounded-xl bg-white text-sm"
+      >
+        <option value="all">All</option>
+        <option value="Available">Available</option>
+        <option value="Rented">Rented</option>
+        <option value="Sold">Sold</option>
+        <option value="Deleted">Deleted</option>
+      </select>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex flex-col justify-center items-center py-24 gap-4">
+      <div class="spinner"></div>
+      <p class="font-mono text-xs uppercase tracking-widest text-text-gray">Loading cars…</p>
+    </div>
+  } @else if (filteredCars().length === 0) {
+    <div class="text-center py-20 border-2 border-dashed border-gray-300 rounded-2xl">
+      <p class="text-lg text-gray-500">No cars found.</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (car of filteredCars(); track car.id) {
+        <div class="border-2 border-black rounded-2xl overflow-hidden bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <div class="relative h-44 bg-gray-100">
+            <img
+              [src]="getMainImage(car)"
+              [alt]="car.brand + ' ' + car.model"
+              class="w-full h-full object-cover"
+            />
+            <span class="absolute top-3 right-3 text-xs font-bold px-2 py-1 bg-white border-2 border-black rounded-full">
+              {{ getTypeLabel(car.type) }}
+            </span>
+            <span class="absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded-full border-2"
+              [class.bg-green-100]="car.status === 'Available'"
+              [class.bg-yellow-100]="car.status === 'Rented'"
+              [class.bg-blue-100]="car.status === 'Sold'"
+              [class.bg-gray-100]="car.status === 'Deleted'"
+              [class.border-green-300]="car.status === 'Available'"
+              [class.border-yellow-300]="car.status === 'Rented'"
+              [class.border-blue-300]="car.status === 'Sold'"
+              [class.border-gray-300]="car.status === 'Deleted'"
+            >
+              {{ car.status }}
+            </span>
+          </div>
+
+          <div class="p-4">
+            <h3 class="font-display text-lg font-bold uppercase">{{ car.brand }} {{ car.model }}</h3>
+            <p class="text-sm text-gray-500">{{ car.year }} · {{ getConditionLabel(car.condition) }}</p>
+            <p class="text-sm font-bold text-green mt-1">
+              @if (car.type === 'Sale') {
+                ${{ car.price?.toLocaleString() }}
+              } @else {
+                ${{ car.pricePerDay?.toLocaleString() }}/day
+              }
+            </p>
+            <p class="text-xs text-gray-400 mt-1">Qty: {{ car.availableQuantity }}/{{ car.quantity }}</p>
+
+            <div class="flex gap-2 mt-4">
+              <a [routerLink]="['/edit-car', car.id]" class="bg-black hover:bg-neutral-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                Edit
+              </a>
+              @if (isAdmin) {
+                <button (click)="deleteCar(car.id)" [disabled]="isDeleting()" class="border-2 border-red-500 text-red-600 hover:bg-red-50 text-xs font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50">
+                  Delete
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,197 @@
+<div class="bg-white min-h-screen px-6 py-12 md:px-12 max-w-4xl mx-auto">
+  <h1 class="font-display text-4xl font-bold uppercase tracking-tight text-black mb-8">My Profile</h1>
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-20"><div class="spinner"></div></div>
+  } @else if (errorMessage()) {
+    <div class="p-4 border-2 border-red-500 text-red-600 rounded-xl text-sm mb-4">{{ errorMessage() }}</div>
+  } @else if (profile()) {
+
+    @if (successMessage()) {
+      <div class="p-4 border-2 border-green-500 text-green-600 rounded-xl text-sm mb-4">{{ successMessage() }}</div>
+    }
+
+    <!-- Profile Header -->
+    <div class="border-2 border-black rounded-2xl p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <div class="w-20 h-20 rounded-full bg-gray-200 overflow-hidden border-2 border-black">
+            @if (previewUrl) {
+              <img [src]="previewUrl" class="w-full h-full object-cover" />
+            } @else if (profile()?.profilePicture) {
+              <img [src]="profile()?.profilePicture" class="w-full h-full object-cover" />
+            } @else {
+              <div class="w-full h-full flex items-center justify-center text-3xl font-bold text-gray-400">
+                {{ profile()?.firstName?.[0] }}{{ profile()?.lastName?.[0] }}
+              </div>
+            }
+          </div>
+          <label class="absolute bottom-0 right-0 bg-green text-white rounded-full p-1 cursor-pointer hover:bg-green-hover transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden" />
+          </label>
+        </div>
+        <div>
+          <h2 class="font-display text-2xl font-bold">{{ profile()?.firstName }} {{ profile()?.lastName }}</h2>
+          <p class="text-sm text-gray-500">{{ profile()?.email }}</p>
+          <p class="text-xs text-gray-400">Role: {{ profile()?.role }}</p>
+          @if (profile()?.isEmailVerified === false) {
+            <p class="text-xs text-yellow-600">⚠️ Email not verified</p>
+          }
+          @if (selectedFile) {
+            <button (click)="uploadProfilePicture()" [disabled]="isSaving()" class="mt-2 bg-green hover:bg-green-hover text-white text-xs font-bold px-4 py-1 rounded-xl transition-all disabled:opacity-50">Upload</button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Email Verification Section -->
+    @if (profile()?.isEmailVerified === false) {
+      <div class="border-2 border-yellow-500 rounded-2xl p-6 bg-yellow-50 mb-8">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-2xl">⚠️</span>
+          <div>
+            <h3 class="font-bold text-yellow-800">Email Not Verified</h3>
+            <p class="text-sm text-yellow-700">
+              Please verify your email to access all features like listing cars.
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Resend Button -->
+          <button 
+            (click)="resendVerification()" 
+            [disabled]="isSendingVerification()"
+            class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50 text-sm"
+          >
+            {{ isSendingVerification() ? 'Sending...' : 'Resend Verification Email' }}
+          </button>
+          
+          <!-- Verify with Code -->
+          <div class="flex items-center gap-2">
+            <input 
+              type="text" 
+              [(ngModel)]="verificationCode" 
+              placeholder="Enter code"
+              class="w-32 px-3 py-2 border-2 border-black rounded-xl text-sm focus:outline-none focus:border-green"
+            />
+            <button 
+              (click)="verifyEmail()" 
+              [disabled]="isVerifying() || !verificationCode"
+              class="bg-green hover:bg-green-hover text-white font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50 text-sm"
+            >
+              {{ isVerifying() ? 'Verifying...' : 'Verify' }}
+            </button>
+          </div>
+        </div>
+        
+        @if (verificationMessage()) {
+          <p class="text-sm mt-2" [class.text-green-600]="verificationMessage()?.includes('sent')" [class.text-red-600]="!verificationMessage()?.includes('sent')">
+            {{ verificationMessage() }}
+          </p>
+        }
+      </div>
+    }
+
+    <!-- Edit Profile -->
+    <div class="border-2 border-black rounded-2xl p-6 bg-white mb-8">
+      <h3 class="font-display text-xl font-bold uppercase mb-4">Edit Profile</h3>
+      <form (ngSubmit)="updateProfile()" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">First Name</label>
+            <input type="text" [(ngModel)]="updateData.firstName" name="firstName" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">Middle Name</label>
+            <input type="text" [(ngModel)]="updateData.middleName" name="middleName" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">Last Name</label>
+            <input type="text" [(ngModel)]="updateData.lastName" name="lastName" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+        </div>
+        <button type="submit" [disabled]="isSaving()" class="bg-green hover:bg-green-hover text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">{{ isSaving() ? 'Saving...' : 'Save Changes' }}</button>
+      </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="border-2 border-black rounded-2xl p-6 bg-white mb-8">
+      <h3 class="font-display text-xl font-bold uppercase mb-4">Change Password</h3>
+      <form (ngSubmit)="changePassword()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-500">Current Password</label>
+          <input type="password" [(ngModel)]="currentPassword" name="currentPassword" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-500">New Password</label>
+          <input type="password" [(ngModel)]="newPassword" name="newPassword" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-500">Confirm Password</label>
+          <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+        </div>
+        <button type="submit" [disabled]="isSaving()" class="bg-black hover:bg-neutral-800 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">{{ isSaving() ? 'Changing...' : 'Change Password' }}</button>
+      </form>
+    </div>
+
+    <!-- Change Email -->
+    <div class="border-2 border-black rounded-2xl p-6 bg-white mb-8">
+      <h3 class="font-display text-xl font-bold uppercase mb-4">Change Email</h3>
+      @if (!showEmailVerification) {
+        <form (ngSubmit)="requestEmailChange()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">New Email</label>
+            <input type="email" [(ngModel)]="newEmail" name="newEmail" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">Current Password</label>
+            <input type="password" [(ngModel)]="emailPassword" name="emailPassword" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <button type="submit" [disabled]="isSaving()" class="bg-black hover:bg-neutral-800 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">{{ isSaving() ? 'Sending...' : 'Request Email Change' }}</button>
+        </form>
+      } @else {
+        <form (ngSubmit)="verifyEmailChange()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">Verification Code</label>
+            <input type="text" [(ngModel)]="emailChangeToken" name="emailChangeToken" placeholder="Enter code" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <button type="submit" [disabled]="isSaving()" class="bg-green hover:bg-green-hover text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">{{ isSaving() ? 'Verifying...' : 'Verify & Change Email' }}</button>
+          <button type="button" (click)="showEmailVerification = false; newEmail = ''; emailPassword = ''" class="text-xs text-gray-500 hover:text-black underline">Cancel</button>
+        </form>
+      }
+    </div>
+
+    <!-- Change Phone -->
+    <div class="border-2 border-black rounded-2xl p-6 bg-white mb-8">
+      <h3 class="font-display text-xl font-bold uppercase mb-4">Change Phone Number</h3>
+      @if (!showPhoneVerification) {
+        <form (ngSubmit)="requestPhoneChange()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">New Phone Number</label>
+            <input type="text" [(ngModel)]="newPhoneNumber" name="newPhoneNumber" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">Current Password</label>
+            <input type="password" [(ngModel)]="phonePassword" name="phonePassword" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <button type="submit" [disabled]="isSaving()" class="bg-black hover:bg-neutral-800 text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">{{ isSaving() ? 'Sending...' : 'Request Phone Change' }}</button>
+        </form>
+      } @else {
+        <form (ngSubmit)="verifyPhoneChange()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-gray-500">Verification Code</label>
+            <input type="text" [(ngModel)]="phoneChangeToken" name="phoneChangeToken" placeholder="Enter code" class="w-full px-3 py-2 border-2 border-black rounded-xl focus:outline-none focus:border-green" required />
+          </div>
+          <button type="submit" [disabled]="isSaving()" class="bg-green hover:bg-green-hover text-white font-bold px-6 py-2 rounded-xl transition-all disabled:opacity-50">{{ isSaving() ? 'Verifying...' : 'Verify & Change Phone' }}</button>
+          <button type="button" (click)="showPhoneVerification = false; newPhoneNumber = ''; phonePassword = ''" class="text-xs text-gray-500 hover:text-black underline">Cancel</button>
+        </form>
+      }
+    </div>
+
+    <button (click)="logout()" class="border-2 border-red-500 text-red-600 hover:bg-red-50 font-bold px-6 py-3 rounded-xl transition-all">Logout</button>
+  }
+</div>
