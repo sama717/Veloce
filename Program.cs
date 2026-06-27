@@ -1,4 +1,6 @@
+
 using System.Text;
+using System.Text.Json;
 using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +71,7 @@ public class Program
         builder.Services.AddScoped<IBookingService, BookingService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
         builder.Services.AddScoped<IRentalContractService, RentalContractService>();
+        builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -90,7 +93,41 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(jwtKey))
             };
+            
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["jwt"];
+                    return Task.CompletedTask;
+                }
+            };
         });
+        
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAngular",
+                policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200") 
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();  
+                });
+        });
+        
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.None;
+        });
+        
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            });
         
         var app = builder.Build();
 
@@ -106,12 +143,16 @@ public class Program
         
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         
+        app.UseCors("AllowAngular");
+        
         app.UseAuthentication();
 
         app.UseAuthorization();
         
         app.MapControllers();
 
+        app.UseDeveloperExceptionPage();
+        
         app.Run();
     }
 }

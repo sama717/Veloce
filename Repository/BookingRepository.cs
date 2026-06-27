@@ -70,4 +70,19 @@ public class BookingRepository(VeloceDbContext context) : GenericRepository<Book
                 .ThenInclude(c => c.Dealership)
             .FirstOrDefaultAsync(b => b.Id == id && !b.IsDeleted);
     }
+    
+    public async Task<IEnumerable<Booking>> GetProviderBookingsAsync(int userId)
+    {
+        return await _dbSet
+            .Include(b => b.User)
+            .Include(b => b.Car)
+            .ThenInclude(c => c.AssetOwnership)
+            .Include(b => b.RentalDetail)
+            .Include(b => b.ConsultationDetail)
+            .ThenInclude(c => c.Dealership)
+            .Where(b => b.Car.AssetOwnership.UserId == userId)
+            .Where(b => !b.IsDeleted)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
 }

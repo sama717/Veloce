@@ -118,17 +118,45 @@ public class BookingService(IUnitOfWork unitOfWork, IMapper mapper) : IBookingSe
         return _mapper.Map<IEnumerable<BookingDto>>(bookings);
     }
 
-    public async Task<BookingDto> UpdateStatusAsync(int id, UpdateBookingDto dto)
+    public async Task<BookingDto> UpdateStatusAsync(int id, UpdateBookingDto dto, User user)
     {
         var booking = await _unitOfWork.Bookings.GetWithDetailsAsync(id);
         if (booking == null)
             throw new AppException("Booking not found", 404);
-        
-        if (booking.Status == BookingStatus.Canceled || booking.Status == BookingStatus.Completed || booking.Status == BookingStatus.Rejected)
+
+        // ✅ Check if user is authorized to update this booking
+        var isAdmin = user.Role == UserRole.SystemUser && user.EmployeeProfile?.Position == EmployeeMode.Admin;
+        var isManager = user.Role == UserRole.SystemUser && user.EmployeeProfile?.Position == EmployeeMode.Manager;
+        var isProvider = user.ClientProfile?.Mode == UserMode.Provider;
+        var isBooker = booking.UserId == user.Id;
+
+        // ✅ If provider, check if they own the car
+        if (isProvider)
+        {
+            var assetOwnership = await _unitOfWork.AssetOwnerships.GetByCarIdAsync(booking.CarId);
+            if (assetOwnership?.UserId != user.Id)
+                throw new AppException("You can only update bookings for your own cars.", 403);
+        }
+        // ✅ If manager, check if dealership owns the car
+        else if (isManager)
+        {
+            var assetOwnership = await _unitOfWork.AssetOwnerships.GetByCarIdAsync(booking.CarId);
+            if (assetOwnership?.DealershipId != user.EmployeeProfile?.DealershipId)
+                throw new AppException("You can only update bookings for cars in your dealership.", 403);
+        }
+        // ✅ If admin, allow
+        else if (!isAdmin && !isBooker)
+        {
+            throw new AppException("You are not authorized to update this booking.", 403);
+        }
+
+        // Validate status transition
+        if (booking.Status == BookingStatus.Canceled || booking.Status == BookingStatus.Completed || 
+            booking.Status == BookingStatus.Rejected)
             throw new AppException($"Cannot update booking with status '{booking.Status}'", 400);
 
         booking.Status = dto.Status;
-        
+
         _unitOfWork.Bookings.Update(booking);
         await _unitOfWork.SaveChangesAsync();
 
@@ -198,5 +226,17 @@ public class BookingService(IUnitOfWork unitOfWork, IMapper mapper) : IBookingSe
         booking.IsDeleted = true;
         _unitOfWork.Bookings.Update(booking);
         await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task<IEnumerable<BookingDto>> GetProviderBookingsAsync(int userId)
+    {
+        var bookings = await _unitOfWork.Bookings.GetProviderBookingsAsync(userId);
+        return _mapper.Map<IEnumerable<BookingDto>>(bookings);
+    }
+    
+    public async Task<IEnumerable<BookingDto>> GetAllBookingsAsync()
+    {
+        var bookings = await _unitOfWork.Bookings.GetAllAsync(); 
+        return _mapper.Map<IEnumerable<BookingDto>>(bookings);
     }
 }

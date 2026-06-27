@@ -11,4 +11,5 @@ public interface IBookingRepository : IRepository<Booking>
     Task<IEnumerable<Booking>> GetByCarIdAsync(int carId);
     Task<IEnumerable<Booking>> GetByDateRangeAsync(DateTime from, DateTime to);
     Task<Booking?> GetWithDetailsAsync(int id);
+    Task<IEnumerable<Booking>> GetProviderBookingsAsync(int userId);
 }

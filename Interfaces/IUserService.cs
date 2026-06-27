@@ -15,4 +15,5 @@ public interface IUserService
     Task RemoveEmployeeAsync(int userId);
     Task<IEnumerable<EmployeeResponseDto>> GetEmployeesByDealershipAsync(int dealershipId);
     Task<IEnumerable<EmployeeResponseDto>> GetAllEmployeesAsync();
+    Task<IEnumerable<UserDto>> GetAllUsersAsync();
 }

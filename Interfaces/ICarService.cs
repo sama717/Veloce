@@ -15,4 +15,5 @@ public interface ICarService
     Task RemoveImageAsync(int carId, int imageId, User user);
     Task SetMainImageAsync(int carId, int imageId, User user);
     Task ReorderImagesAsync(int carId, List<int> imageIdsInOrder, User user);
+    Task<IEnumerable<CarDto>> GetMyCarsAsync(int userId);
 }

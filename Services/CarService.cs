@@ -73,10 +73,10 @@ public class CarService : ICarService
     {
         if (user.Role == UserRole.Client && user.ClientProfile?.Mode != UserMode.Provider)
             throw new AppException("Access Denied: Regular clients cannot create listings.", 403);
-        
+    
         if (!user.IsEmailVerified)
             throw new AppException("Your email must be verified to list a car.", 403);
-        
+    
         var car = _mapper.Map<Car>(dto);
         car.Status = CarStatus.Available;
         car.AvailableQuantity = dto.Quantity;
@@ -86,16 +86,20 @@ public class CarService : ICarService
             UserId = dto.OwnerId,
             DealershipId = dto.OwnerId == null ? dto.DealershipId : null
         };
-        
+    
+        // ✅ Manual image handling (NOT AutoMapper)
         if (dto.Images is { Count: > 0 })
         {
-            var imageUrls = await _imageService.UploadMultipleAsync(dto.Images);
-            
-            car.Images = imageUrls.Select((url, index) => new CarImage
+            car.Images = new List<CarImage>();
+            for (var i = 0; i < dto.Images.Count; i++)
             {
-                ImageUrl = url,
-                IsMain = index == 0
-            }).ToList();
+                var url = await _imageService.UploadAsync(dto.Images[i]);
+                car.Images.Add(new CarImage
+                {
+                    ImageUrl = url,
+                    IsMain = i == 0
+                });
+            }
         }
 
         await _unitOfWork.Cars.AddAsync(car);
@@ -278,5 +282,11 @@ public class CarService : ICarService
         }
 
         await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task<IEnumerable<CarDto>> GetMyCarsAsync(int userId)
+    {
+        var cars = await _unitOfWork.Cars.GetMyCarsAsync(userId);
+        return _mapper.Map<IEnumerable<CarDto>>(cars);
     }
 }

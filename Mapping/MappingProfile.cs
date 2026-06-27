@@ -118,5 +118,8 @@ public class MappingProfile : Profile
 
         CreateMap<RentalDetail, RentalDetailDto>();
         CreateMap<ConsultationDetail, ConsultationDetailDto>();
+        
+        CreateMap<CreateCarDto, Car>()
+            .ForMember(dest => dest.Images, opt => opt.Ignore());
     }
 }

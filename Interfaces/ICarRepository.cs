@@ -10,4 +10,5 @@ public interface ICarRepository : IRepository<Car>
     Task<IEnumerable<Car>> GetAvailableForRentAsync();
     Task<IEnumerable<Car>> GetAvailableForSaleAsync();
     Task<Car?> GetWithImagesAsync(int id);
+    Task<IEnumerable<Car>> GetMyCarsAsync(int userId);
 }

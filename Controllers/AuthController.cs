@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Veloce.Exceptions;
+using Veloco.DTOs.Auth;
 using Veloco.DTOs.User;
 using Veloco.Interfaces;
 using LoginRequest = Veloco.DTOs.Auth.LoginRequest;
@@ -112,5 +113,19 @@ public class AuthController(IAuthService authService) : ControllerBase
         var userId = GetUserId();
         await _authService.ResendVerificationEmailAsync(userId);
         return Ok(new { message = "Verification code resent." });
+    }
+    
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await _authService.LogoutAsync();
+        return Ok(new { message = "Logged out successfully" });
+    }
+    
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        var response = await _authService.RefreshTokenAsync(request.RefreshToken);
+        return Ok(response);
     }
 }
