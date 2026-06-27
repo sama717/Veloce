@@ -55,7 +55,7 @@ public class CarController : ControllerBase
     {
         var user = await GetCurrentUserWithProfileAsync();
         var car = await _carService.CreateAsync(carDto, user);
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = car.Id }, car);
+        return Ok(car);
     }
     
     [Authorize]
@@ -110,5 +110,14 @@ public class CarController : ControllerBase
         var user = await GetCurrentUserWithProfileAsync();
         await _carService.ReorderImagesAsync(carId, imageIdsInOrder, user);
         return NoContent();
+    }
+    
+    [Authorize]
+    [HttpGet("my-cars")]
+    public async Task<IActionResult> GetMyCars()
+    {
+        var userId = GetUserId();
+        var cars = await _carService.GetMyCarsAsync(userId);
+        return Ok(cars);
     }
 }

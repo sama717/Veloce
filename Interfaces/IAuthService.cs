@@ -20,4 +20,6 @@ public interface IAuthService
     Task VerifyPhoneNumberChangeAsync(int userId, VerifyPhoneNumberChangeDto dto);
     Task VerifyEmailAsync(int userId, string code);
     Task ResendVerificationEmailAsync(int userId);
+    Task LogoutAsync();
+    Task<AuthResponse> RefreshTokenAsync(string refreshToken);
 }

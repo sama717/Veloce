@@ -12,20 +12,40 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
 {
     public async Task<IEnumerable<Car>> GetFilteredAsync(CarFilterParams carFilterParams)
     {
-        return await _dbSet
-            .Where(c => c.Status != CarStatus.Deleted)
-            .Where(c => 
-                (carFilterParams.Brand == null || c.Brand == carFilterParams.Brand) &&
-                (carFilterParams.Model == null || c.Model == carFilterParams.Model) &&
-                (carFilterParams.Color == null || c.Color == carFilterParams.Color) &&
-                (carFilterParams.Condition == null || c.Condition == carFilterParams.Condition) &&
-                (carFilterParams.YearFrom == null || c.Year >= carFilterParams.YearFrom) &&
-                (carFilterParams.YearTo == null || c.Year <= carFilterParams.YearTo) &&
-                (carFilterParams.MinPrice == null || c.Price >= carFilterParams.MinPrice) &&
-                (carFilterParams.MaxPrice == null || c.Price <= carFilterParams.MaxPrice) &&
-                (carFilterParams.Type == null || c.Type == carFilterParams.Type)
-            )
-            .ToListAsync();
+        var query = _dbSet
+            .Include(c => c.Images)
+            .Where(c => c.Status != CarStatus.Deleted);
+
+        // String filters with partial match (case-insensitive)
+        if (!string.IsNullOrWhiteSpace(carFilterParams.Brand))
+            query = query.Where(c => EF.Functions.ILike(c.Brand, $"%{carFilterParams.Brand}%"));
+
+        if (!string.IsNullOrWhiteSpace(carFilterParams.Model))
+            query = query.Where(c => EF.Functions.ILike(c.Model, $"%{carFilterParams.Model}%"));
+
+        if (!string.IsNullOrWhiteSpace(carFilterParams.Color))
+            query = query.Where(c => EF.Functions.ILike(c.Color, $"%{carFilterParams.Color}%"));
+
+        // Numeric/Exact filters
+        if (carFilterParams.Condition.HasValue)
+            query = query.Where(c => c.Condition == carFilterParams.Condition.Value);
+
+        if (carFilterParams.YearFrom.HasValue)
+            query = query.Where(c => c.Year >= carFilterParams.YearFrom.Value);
+
+        if (carFilterParams.YearTo.HasValue)
+            query = query.Where(c => c.Year <= carFilterParams.YearTo.Value);
+
+        if (carFilterParams.MinPrice.HasValue)
+            query = query.Where(c => c.Price >= carFilterParams.MinPrice.Value);
+
+        if (carFilterParams.MaxPrice.HasValue)
+            query = query.Where(c => c.Price <= carFilterParams.MaxPrice.Value);
+
+        if (carFilterParams.Type.HasValue)
+            query = query.Where(c => c.Type == carFilterParams.Type.Value);
+
+        return await query.ToListAsync();
     }
 
     public async Task<IEnumerable<Car>> GetByDealershipAsync(int dealershipId)
@@ -60,5 +80,15 @@ public class CarRepository(VeloceDbContext context) : GenericRepository<Car>(con
             .Include(i => i.AssetOwnership)
                 .ThenInclude(a => a.User)
             .FirstOrDefaultAsync(i => i.Id == id);
+    }
+    
+    public async Task<IEnumerable<Car>> GetMyCarsAsync(int userId)
+    {
+        return await _dbSet
+            .Include(c => c.Images)
+            .Include(c => c.AssetOwnership)
+            .Where(c => c.AssetOwnership.UserId == userId)
+            .Where(c => c.Status != CarStatus.Deleted)
+            .ToListAsync();
     }
 }

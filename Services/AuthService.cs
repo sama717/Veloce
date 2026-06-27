@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Veloce.Exceptions;
 using Veloco.DTOs.Auth;
 using Veloco.DTOs.User;
+using Veloco.Enums;
 using Veloco.Interfaces;
 using Veloco.Models;
 using LoginRequest = Veloco.DTOs.Auth.LoginRequest;
@@ -16,7 +17,8 @@ public class AuthService(
     IPasswordHasher passwordHasher,
     ITokenGenerator tokenGenerator,
     ITokenService tokenService,
-    IEmailService emailService)
+    IEmailService emailService,
+    IHttpContextAccessor httpContextAccessor)
     : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -24,6 +26,7 @@ public class AuthService(
     private readonly ITokenGenerator _tokenGenerator = tokenGenerator;
     private readonly ITokenService _tokenService = tokenService;
     private readonly IEmailService _emailService = emailService;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     
     private static string HashToken(string code)
     {
@@ -34,15 +37,15 @@ public class AuthService(
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
         var existingEmail = await _unitOfWork.Users.GetByEmailAsync(request.Email);
-        if (existingEmail != null)
+        if (existingEmail != null && existingEmail.Status != UserStatus.Deleted)
             throw new AppException("Email already exists", 400);
-        
+
         var existingUserName = await _unitOfWork.Users.GetByUsernameAsync(request.Username);
-        if (existingUserName != null)
+        if (existingUserName != null && existingUserName.Status != UserStatus.Deleted)
             throw new AppException("Username already exists", 400);
-        
+
         var existingPhone = await _unitOfWork.Users.GetByPhoneNumberAsync(request.PhoneNumber);
-        if (existingPhone != null)
+        if (existingPhone != null && existingPhone.Status != UserStatus.Deleted)
             throw new AppException("Phone number already in use", 400);
 
         var user = new User{
@@ -59,7 +62,7 @@ public class AuthService(
                 Mode = request.Mode
             }
         };
-        
+    
         await _unitOfWork.Users.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
@@ -73,14 +76,12 @@ public class AuthService(
             ExpiresAt = DateTime.UtcNow.AddMinutes(15),
             IsUsed = false
         };
-        
+    
         await _unitOfWork.EmailVerificationTokens.AddAsync(verificationToken);
         await _unitOfWork.SaveChangesAsync();
 
         await _emailService.SendVerificationEmailAsync(user.Email, code, "email");
-
-        var jwt = _tokenService.GenerateToken(user);
-        
+    
         return new AuthResponse
         {
             Id = user.Id,
@@ -89,7 +90,6 @@ public class AuthService(
             LastName = user.LastName,
             Email = user.Email,
             ProfilePicture = user.ProfilePicture,
-            Token = jwt,
             IsEmailVerified = user.IsEmailVerified,
             Username = user.Username,
             Role = user.Role.ToString(),
@@ -102,44 +102,64 @@ public class AuthService(
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
-    {
-        var user = await _unitOfWork.Users.GetByEmailAsync(request.Identifier)
-                   ?? await _unitOfWork.Users.GetByUsernameAsync(request.Identifier);
-        if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
-            throw new AppException("Invalid credentials", 401);
-        
-        user = await _unitOfWork.Users.GetWithProfileAsync(user.Id);
-        if (user == null) 
-            throw new AppException("User not found", 404);
-        
-        var jwt = _tokenService.GenerateToken(user);
+{
+    var user = await _unitOfWork.Users.GetByEmailAsync(request.Identifier)
+               ?? await _unitOfWork.Users.GetByUsernameAsync(request.Identifier);
+    if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+        throw new AppException("Invalid credentials", 401);
 
-        return new AuthResponse
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            MiddleName = user.MiddleName,
-            LastName = user.LastName,
-            Email = user.Email,
-            Username = user.Username,
-            Role = user.Role.ToString(),
-            ProfilePicture = user.ProfilePicture,
-            Token = jwt,
-            IsEmailVerified = user.IsEmailVerified,
-            ClientProfile = user.ClientProfile != null ? new ClientProfileDto 
-            {
-                Id = user.ClientProfile.Id,
-                UserMode = user.ClientProfile.Mode.ToString()
-            } : null,
-            EmployeeProfile = user.EmployeeProfile != null ? new EmployeeProfileDto
-            {
-                Id = user.EmployeeProfile.Id,
-                DealershipId = user.EmployeeProfile.DealershipId,
-                Position = user.EmployeeProfile.Position.ToString(),
-                DealershipName = user.EmployeeProfile.Dealership.Name,
-            } : null
-        };
+    // Block only permanently deleted users
+    if (user.Status == UserStatus.Deleted)
+        throw new AppException("Your account has been permanently deleted. Please register again.", 403);
+
+    // Reactivate deactivated users automatically
+    if (user.Status == UserStatus.Deactivated)
+    {
+        user.Status = UserStatus.Active;
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
     }
+
+    // Now get full profile (after potential reactivation)
+    user = await _unitOfWork.Users.GetWithProfileAsync(user.Id);
+    if (user == null) 
+        throw new AppException("User not found", 404);
+
+    var jwt = _tokenService.GenerateToken(user);
+    var refreshToken = _tokenGenerator.GenerateSecureToken();
+
+    user.RefreshToken = refreshToken;
+    user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
+    _unitOfWork.Users.Update(user);
+    await _unitOfWork.SaveChangesAsync();
+
+    return new AuthResponse
+    {
+        Id = user.Id,
+        FirstName = user.FirstName,
+        MiddleName = user.MiddleName,
+        LastName = user.LastName,
+        Email = user.Email,
+        Username = user.Username,
+        Role = user.Role.ToString(),
+        ProfilePicture = user.ProfilePicture,
+        IsEmailVerified = user.IsEmailVerified,
+        Token = jwt,
+        RefreshToken = refreshToken,
+        ClientProfile = user.ClientProfile != null ? new ClientProfileDto 
+        {
+            Id = user.ClientProfile.Id,
+            UserMode = user.ClientProfile.Mode.ToString()
+        } : null,
+        EmployeeProfile = user.EmployeeProfile != null ? new EmployeeProfileDto
+        {
+            Id = user.EmployeeProfile.Id,
+            DealershipId = user.EmployeeProfile.DealershipId,
+            Position = user.EmployeeProfile.Position.ToString(),
+            DealershipName = user.EmployeeProfile.Dealership.Name,
+        } : null
+    };
+}
 
     public async Task ForgetPasswordAsync(ForgotPasswordDto request)
     {
@@ -346,5 +366,61 @@ public class AuthService(
         await _unitOfWork.SaveChangesAsync();
 
         await _emailService.SendVerificationEmailAsync(user.Email, code, "email");
+    }
+
+    public async Task LogoutAsync()
+    {
+        _httpContextAccessor.HttpContext.Response.Cookies.Delete("jwt");
+        await Task.CompletedTask;
+    }
+    
+    public async Task<AuthResponse> RefreshTokenAsync(string refreshToken)
+    {
+        var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshToken);
+    
+        if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
+            throw new AppException("Invalid or expired refresh token", 401);
+        
+        if (user.Status != UserStatus.Active)
+            throw new AppException("Your account is deactivated or deleted. Please contact support.", 403);
+    
+        var newJwt = _tokenService.GenerateToken(user);
+        var newRefreshToken = _tokenGenerator.GenerateSecureToken();
+
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+        
+        // var cookieOptions = new CookieOptions { ... };
+        // _httpContextAccessor.HttpContext.Response.Cookies.Append("jwt", newJwt, cookieOptions);
+
+        return new AuthResponse
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            MiddleName = user.MiddleName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Username = user.Username,
+            Role = user.Role.ToString(),
+            ProfilePicture = user.ProfilePicture,
+            IsEmailVerified = user.IsEmailVerified,
+            Token = newJwt,                     // ✅ Return new JWT in response
+            RefreshToken = newRefreshToken,
+            ClientProfile = user.ClientProfile != null ? new ClientProfileDto 
+            {
+                Id = user.ClientProfile.Id,
+                UserMode = user.ClientProfile.Mode.ToString()
+            } : null,
+            EmployeeProfile = user.EmployeeProfile != null ? new EmployeeProfileDto
+            {
+                Id = user.EmployeeProfile.Id,
+                DealershipId = user.EmployeeProfile.DealershipId,
+                Position = user.EmployeeProfile.Position.ToString(),
+                DealershipName = user.EmployeeProfile.Dealership.Name,
+            } : null
+        };
     }
 }

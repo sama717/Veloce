@@ -18,6 +18,8 @@ public class User
     public bool IsEmailVerified { get; set; }
     public DateTime CreatedAt { get; set; } =  DateTime.UtcNow;
     public UserStatus Status { get; set; } = UserStatus.Active;
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiry { get; set; }
     
     public ClientProfile? ClientProfile { get; set; }
     public EmployeeProfile? EmployeeProfile { get; set; }

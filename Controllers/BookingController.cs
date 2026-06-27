@@ -35,6 +35,23 @@ public class BookingController(IBookingService bookingService, IUnitOfWork unitO
         var booking = await _bookingService.CreateRentalAsync(dto, userId);
         return CreatedAtAction(nameof(GetById), new { id = booking.Id }, booking);
     }
+    
+    [HttpGet]
+    [Authorize(Roles = "SystemUser")]
+    public async Task<IActionResult> GetAll()
+    {
+        var bookings = await _bookingService.GetAllBookingsAsync();
+        return Ok(bookings);
+    }
+        
+    [Authorize]
+    [HttpGet("provider")]
+    public async Task<IActionResult> GetProviderBookings()
+    {
+        var userId = GetUserId();
+        var bookings = await _bookingService.GetProviderBookingsAsync(userId);
+        return Ok(bookings);
+    }
 
     [HttpPost("consultation")]
     public async Task<IActionResult> CreateConsultation([FromBody] CreateConsultationBookingDto dto)
@@ -66,10 +83,12 @@ public class BookingController(IBookingService bookingService, IUnitOfWork unitO
         return Ok(bookings);
     }
 
+    [Authorize]
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateBookingDto dto)
     {
-        var booking = await _bookingService.UpdateStatusAsync(id, dto);
+        var user = await GetCurrentUserWithProfileAsync();
+        var booking = await _bookingService.UpdateStatusAsync(id, dto, user);
         return Ok(booking);
     }
 
@@ -89,4 +108,5 @@ public class BookingController(IBookingService bookingService, IUnitOfWork unitO
         await _bookingService.DeleteAsync(id, user);
         return NoContent();
     }
+
 }

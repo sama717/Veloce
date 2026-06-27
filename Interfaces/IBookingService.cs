@@ -13,9 +13,11 @@ public interface IBookingService
     Task<IEnumerable<BookingDto>> GetByUserIdAsync(int userId);
     Task<IEnumerable<BookingDto>> GetByCarIdAsync(int carId);
     
-    Task<BookingDto> UpdateStatusAsync(int id, UpdateBookingDto dto);
+    Task<BookingDto> UpdateStatusAsync(int id, UpdateBookingDto dto, User user);
     
     Task CancelAsync(int id, User user);
     
     Task DeleteAsync(int id, User user);
+    Task<IEnumerable<BookingDto>> GetProviderBookingsAsync(int userId);
+    Task<IEnumerable<BookingDto>> GetAllBookingsAsync();
 }

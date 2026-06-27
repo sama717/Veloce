@@ -98,4 +98,13 @@ public class UserController(IUserService userService) : ControllerBase
         var result = await _userService.GetAllEmployeesAsync();
         return Ok(result);
     }
+    
+    [Authorize(Roles = "SystemUser")]
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = await _userService.GetAllUsersAsync();
+        return Ok(users);
+    }
+    
 }
