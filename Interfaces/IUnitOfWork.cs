@@ -1,0 +1,21 @@
+using Veloco.Interfaces;
+
+namespace Veloco.Interfaces;
+
+public interface IUnitOfWork : IDisposable
+{
+    IUserRepository Users { get; }
+    ICarRepository Cars { get; }
+    IBookingRepository Bookings { get; }
+    IPaymentRepository Payments { get; }
+    IDealershipRepository Dealerships { get; }
+    IAssetOwnershipRepository AssetOwnerships { get; }
+    IEmailChangeTokenRepository EmailChangeTokens { get; }
+    IPhoneChangeTokenRepository PhoneChangeTokens { get; }
+    IPasswordResetTokenRepository PasswordResetTokens { get; }
+    IEmailVerificationTokenRepository EmailVerificationTokens { get; }
+    ICarImageRepository CarImages { get; } 
+    IEmployeeProfileRepository EmployeeProfiles { get; }
+    
+    Task<int> SaveChangesAsync();
+}
